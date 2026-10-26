@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lecture 2 — Learning Types, Probability and the Exponential</title>
+<style>
+:root{--bg:#fbfaf8;--fg:#1d1d1f;--mut:#6b6b70;--line:#dcdad5;--acc:#2d4a8a;--pos:#1f7a4d;--neg:#a63a3a;--hl:#fff1b8}
+:root[data-t=dark]{--bg:#141517;--fg:#e8e6e1;--mut:#9a9a9f;--line:#2f3033;--acc:#8fa8e0;--pos:#6cc496;--neg:#e08a8a;--hl:#4a4020}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.7 Georgia,'Iowan Old Style',serif}
+header,main{max-width:720px;margin:0 auto;padding:0 22px}
+header{padding-top:56px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 .3em;font-weight:600}
+h2{font-size:1.4rem;margin:2.2em 0 .5em;font-weight:600}
+h3{font-size:1.05rem;margin:1.6em 0 .3em;font-weight:600}
+p,li{max-width:66ch}
+.sub{color:var(--mut);margin:0 0 1.6em}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 22px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;z-index:5}
+nav button{font:15px system-ui,sans-serif;background:none;border:1px solid transparent;color:var(--mut);padding:6px 12px;border-radius:6px;cursor:pointer}
+nav button.on{color:var(--fg);border-color:var(--line)}
+nav .sp{flex:1}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+section{display:none;padding-bottom:80px}section.on{display:block}
+mark{background:var(--hl);color:inherit;padding:0 .15em}
+.def{border-left:3px solid var(--acc);padding:.1em 0 .1em 1em;margin:1.2em 0}
+.trap{border-left:3px solid var(--neg);padding:.1em 0 .1em 1em;margin:1.2em 0}
+.mn{font-style:italic;color:var(--mut)}
+table{border-collapse:collapse;width:100%;font:15px/1.5 system-ui,sans-serif;margin:1em 0}
+td,th{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.fig{margin:1.4em 0}.fig svg{width:100%;max-width:420px;height:auto;display:block}
+.fig figcaption{font:14px/1.5 system-ui,sans-serif;color:var(--mut);max-width:60ch}
+details{border-top:1px solid var(--line);padding:.6em 0}
+summary{cursor:pointer;font-weight:600}
+.q{border-top:1px solid var(--line);padding:1.2em 0}
+.o{display:block;width:100%;text-align:left;font:16px/1.5 system-ui,sans-serif;background:none;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.o.ok{border-color:var(--pos);color:var(--pos)}.o.no{border-color:var(--neg);color:var(--neg)}
+.ex{display:none;font:15px/1.6 system-ui,sans-serif;color:var(--mut);margin-top:6px}.ex.show{display:block;animation:f .25s}
+@keyframes f{from{opacity:0}to{opacity:1}}
+.sc,.rd{font:15px system-ui;color:var(--mut)}
+.tool{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:1.4em 0;font:15px/1.6 system-ui,sans-serif}
+.tool input{width:100%}
+code{font:.9em ui-monospace,monospace}
+svg text{font:12px system-ui,sans-serif;fill:var(--fg)}
+.ax{stroke:var(--line);fill:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body>
+<nav id="nav"></nav>
+<header><h1>Learning types, probability and the exponential</h1>
+<p class="sub">Lecture 2 exam system, built from a rough speech-to-text transcript. The last part was cut off, so verify wording against your slides.</p></header>
+<main>
+
+<section id="explain">
+<h2>1. Study advice from the lecture</h2>
+<p>The course builds step by step, so <b>review previous lectures first</b>. Use the lecture, the slides and the book together. Prerequisites: statistics and linear algebra (the dot product especially).</p>
+
+<h2>2. Recap from lecture 1</h2>
+<ul><li>The dot product gives a value whose <mark>sign</mark> decides the class.</li>
+<li>Inputs can have many dimensions (x, y, z, …) or higher polynomial degree. The notation is the same either way.</li>
+<li>Real-world example: salary and years of experience decide whether to give a loan (classification).</li></ul>
+
+<h2>3. Types of learning</h2>
+<table><tr><th>Type</th><th>Idea</th><th>Example</th></tr>
+<tr><td><b>Supervised</b></td><td>Labeled data guides us. We know which points are misclassified and adjust.</td><td>Perceptron moving the line</td></tr>
+<tr><td><b>Unsupervised</b></td><td>No guidance from labels. Find structure, e.g. <b>clustering</b> with a <b>centroid</b> in the middle of each group.</td><td>Grouping close points</td></tr>
+<tr><td><b>Reinforcement</b></td><td>Reward when right, penalty when wrong; the system improves by feedback.</td><td>Correct answer, reward; wrong, penalty</td></tr></table>
+<p>The lecture also mentions a mixed type (semi-supervised) without detail.</p>
+<p class="mn">Memory trigger: Supervised = Teacher with answers, Unsupervised = Untagged groups, Reinforcement = Reward.</p>
+
+<h2>4. How we set up learning</h2>
+<ul><li><b>Population</b>: all the data. If we had all of it we could just query it (SQL: SELECT … FROM … WHERE …). We usually don’t.</li>
+<li><b>Sample</b>: the part we have. We want to infer something about the population from it.</li>
+<li><b>Training examples</b>: inputs paired with outputs (x reflects into y, plus a bias).</li>
+<li><b>Hypothesis set H</b>: all candidate lines. We pick one <b>h</b> from H. The unknown <b>target f</b> is approximated by the best candidate, called <b>g</b>.</li>
+<li><b>Learning algorithm</b> (here PLA) picks h using the data.</li></ul>
+<div class="def">Choosing a different h changes how a <b>new</b> point will be classified. That is why we ask whether learning is feasible.</div>
+
+<h2>5. Is learning feasible?</h2>
+<p>Like a <b>feasibility study</b> for a project, we ask whether learning from a sample is worth it and not an oversimplification. We answer with <b>probability</b>.</p>
+
+<h2>6. Probability toolkit</h2>
+<ul><li><b>Independent</b> events: knowing one tells nothing about the other (drawing marbles with eyes closed).</li>
+<li><b>Dependent</b> events: linked (two classmates who always arrive together).</li>
+<li>Binary event: P(red) = μ, so P(not red) = 1 − μ. All probabilities sum to 1.</li>
+<li>For independent events, <b>multiply</b> probabilities. Two events together are less likely than either alone.</li>
+<li><b>Possible</b> vs <b>probable</b>: something may be possible but with near-zero probability.</li></ul>
+<h3>Sample vs population</h3>
+<p>A sample may not represent the population. Two ways to get one: choose it deliberately (stratified, e.g. a statistics office sampling different groups) or choose <b>completely at random</b>. A non-random sample is <b>biased</b>. Complete randomness is not always possible, which is why one sample is not enough.</p>
+
+<h2>7. The coin experiment</h2>
+<p>Fair coin: P(heads) = ½. Ten heads in a row: (½)¹⁰ = <mark>1/1024</mark>. Now give 1000 people a coin and ask each to flip 10 times.</p>
+<ul><li>P(a person does <b>not</b> get 10 heads) = 1023/1024.</li>
+<li>P(nobody does) = (1023/1024)¹⁰⁰⁰ ≈ <b>0.377</b>.</li>
+<li>P(at least one does) = 1 − 0.377 ≈ <b>0.623</b>.</li></ul>
+<p>A very unlikely event becomes <mark>fairly likely</mark> if you repeat the experiment enough. In learning, many samples or hypotheses can make a fluke look real.</p>
+<div class="tool"><label for="n">Number of people flipping: <b id="nv">1000</b></label>
+<input id="n" type="range" min="1" max="5000" value="1000">
+<div>P(at least one gets 10 heads) = <b id="pv"></b></div></div>
+<figure class="fig" id="f1"></figure>
+
+<h2>8. The exponential function</h2>
+<div class="def">For a line <code>y = mx + b</code> the growth rate (slope) is <b>constant</b>. For an exponential <code>y = bˣ</code> the growth rate <b>changes</b>: a small change in x can produce a big change in y.</div>
+<ul><li>Base &gt; 1: y grows as x grows. Base &lt; 1: y shrinks as x grows (decay).</li>
+<li>The special base is <b>e ≈ 2.718</b> (Euler’s number).</li>
+<li>Applications named: expanding galaxies, chemical equations, anything with repeated processes.</li>
+<li>e appears when something repeats many times: <code>(1 − 1/n)ⁿ → 1/e ≈ 0.368</code> as n grows. That is why the “nobody got 10 heads” result is about 37%, and “at least one” about 63%.</li></ul>
+<figure class="fig" id="f2"></figure>
+<p class="rd">Standard fact (not clearly stated in the transcript): the slope of eˣ equals eˣ itself.</p>
+<div class="trap"><b>Traps.</b> (1) Independent events multiply, they do not add. (2) “Not at all” and “at least once” are complements. (3) eˣ does not have a constant slope. (4) Possible is not probable.</div>
+</section>
+
+<section id="summary">
+<h2>Summary</h2>
+<ul>
+<li><b>Supervised</b> (labels), <b>Unsupervised</b> (clusters, centroid), <b>Reinforcement</b> (reward and penalty).</li>
+<li><b>Population</b> vs <b>sample</b>. We learn from a sample to infer the population.</li>
+<li><b>H</b> = hypothesis set, <b>h</b> = chosen one, <b>f</b> = unknown target, <b>g</b> = best approximation.</li>
+<li>Feasibility of learning is answered with <b>probability</b>.</li>
+<li>Independent → multiply. P(not A) = 1 − P(A).</li>
+<li>10 heads in a row = (½)¹⁰ = 1/1024. With 1000 tries, P(at least one) ≈ 0.62–0.63.</li>
+<li>Exponential: <b>changing</b> slope, base e ≈ 2.718, limit (1 − 1/n)ⁿ → 1/e.</li></ul>
+<h3>Spaced repetition</h3>
+<p>Day 1, 3, 7: recompute the coin numbers by hand, then explain the three learning types aloud.</p>
+<h3>Compare</h3>
+<table><tr><th></th><th>Linear</th><th>Exponential</th></tr>
+<tr><td>Growth rate</td><td>constant</td><td>changes</td></tr><tr><td>Form</td><td>mx + b</td><td>bˣ</td></tr>
+<tr><td>Special constant</td><td>none</td><td>e ≈ 2.718</td></tr></table>
+</section>
+
+<section id="mcq"><h2>Multiple choice</h2><p class="sc" id="score">Tap an answer to check it.</p><div id="qs"></div></section>
+<section id="written"><h2>Written questions</h2><div id="wq"></div></section>
+
+<section id="rev">
+<h2>Night-before sheet</h2>
+<table>
+<tr><td>Supervised</td><td>labeled data guides the fix</td></tr>
+<tr><td>Unsupervised</td><td>clustering, centroid, no labels</td></tr>
+<tr><td>Reinforcement</td><td>reward / penalty</td></tr>
+<tr><td>Population / sample</td><td>all data / the part we have</td></tr>
+<tr><td>H, h, f, g</td><td>set of lines, chosen line, unknown target, best approximation</td></tr>
+<tr><td>Independent events</td><td>P(A and B) = P(A)·P(B)</td></tr>
+<tr><td>Complement</td><td>P(not A) = 1 − P(A)</td></tr>
+<tr><td>10 heads</td><td>(½)¹⁰ = 1/1024</td></tr>
+<tr><td>1000 tries</td><td>none ≈ 0.377, at least one ≈ 0.623</td></tr>
+<tr><td>Exponential</td><td>growth rate changes; base e ≈ 2.718</td></tr>
+<tr><td>Limit</td><td>(1 − 1/n)ⁿ → 1/e</td></tr></table>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const secs=[["explain","Explain"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+const nav=$("#nav");
+secs.forEach(([id,t])=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>show(id);b.dataset.id=id;nav.append(b)});
+nav.insertAdjacentHTML("beforeend",'<span class="sp"></span><button id="th" aria-label="Toggle theme">Dark</button>');
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));nav.querySelectorAll("button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===id));scrollTo(0,0)}
+$("#th").onclick=()=>{const r=document.documentElement,d=r.dataset.t==="dark";r.dataset.t=d?"":"dark";$("#th").textContent=d?"Dark":"Light"};
+show("explain");
+
+// slider
+function upd(){const n=+$("#n").value;$("#nv").textContent=n;$("#pv").textContent=(100*(1-Math.pow(1023/1024,n))).toFixed(1)+"%"}
+$("#n").oninput=upd;upd();
+
+// Figure 1: probability vs n
+(function(){let d="";for(let n=0;n<=5000;n+=50){const p=1-Math.pow(1023/1024,n);d+=(n?"L":"M")+(40+240*n/5000)+","+(170-140*p)+" "}
+const x1=40+240*1000/5000,y1=170-140*(1-Math.pow(1023/1024,1000));
+$("#f1").innerHTML=`<svg viewBox="0 0 300 200" role="img"><line class="ax" x1="40" y1="170" x2="280" y2="170"/><line class="ax" x1="40" y1="20" x2="40" y2="170"/><path d="${d}" fill="none" stroke="var(--acc)" stroke-width="2"/><circle cx="${x1}" cy="${y1}" r="4" fill="var(--neg)"/><text x="${x1+8}" y="${y1+14}">n = 1000, 62%</text><text x="40" y="188">number of people (0 to 5000)</text><text x="4" y="24">1</text><text x="4" y="174">0</text></svg><figcaption>Figure 1. Chance that at least one person gets 10 heads in a row, as more people try. It rises quickly, then flattens near 1.</figcaption>`})();
+
+// Figure 2: linear vs exponential
+(function(){let e="",l="";for(let x=0;x<=5.01;x+=.1){const X=40+48*x;e+=(x?"L":"M")+X+","+(170-Math.exp(x))+" ";l+=(x?"L":"M")+X+","+(170-(10*x+5))+" "}
+$("#f2").innerHTML=`<svg viewBox="0 0 300 200" role="img"><line class="ax" x1="40" y1="170" x2="285" y2="170"/><line class="ax" x1="40" y1="15" x2="40" y2="170"/><path d="${l}" fill="none" stroke="var(--mut)" stroke-width="2"/><path d="${e}" fill="none" stroke="var(--acc)" stroke-width="2.5"/><text x="200" y="125" fill="var(--mut)">linear: constant slope</text><text x="190" y="40">exponential: slope grows</text><text x="40" y="188">x (0 to 5)</text></svg><figcaption>Figure 2. The straight line grows by the same amount each step. The exponential starts slower, then overtakes it and keeps accelerating.</figcaption>`})();
+
+const Q=[
+["Which learning type uses labeled data to correct mistakes?",["Unsupervised","Supervised","Reinforcement","None"],1,"Labels tell us which points are misclassified."],
+["Clustering with a centroid is:",["Supervised","Unsupervised","Reinforcement","Polynomial"],1,"No labels guide it."],
+["A centroid is:",["The edge of a cluster","The middle of a cluster","A label","A penalty"],1,"It sits in the middle of the group."],
+["Reward when right, penalty when wrong describes:",["Supervised","Unsupervised","Reinforcement","Sampling"],2,"That is reinforcement."],
+["The population is:",["A subset","All the data","One point","The hypothesis"],1,"The sample is the subset we have."],
+["We learn from the sample to:",["Memorize it","Infer about the population","Remove bias","Avoid data"],1,"That is the goal of learning from data."],
+["The set of all candidate lines is:",["f","g","H","μ"],2,"H is the hypothesis set."],
+["The unknown true rule is:",["h","g","H","f"],3,"f is the target function."],
+["g is:",["The best approximation of f","A sample","A label","The bias"],0,"g is our best guess for f."],
+["Probability is used to decide:",["The colour of data","Whether learning is feasible","The slope","The bias"],1,"Feasibility is argued with probability."],
+["Two classmates who always arrive together are:",["Independent","Dependent","Random","Complements"],1,"Knowing one tells you about the other."],
+["P(not red) when P(red) = μ is:",["μ","1 − μ","μ²","1/μ"],1,"Complement."],
+["Independent events: P(A and B) =",["P(A) + P(B)","P(A)·P(B)","P(A) − P(B)","P(A)/P(B)"],1,"Multiply."],
+["P(10 heads in a row) with a fair coin:",["1/10","1/20","1/1024","1/2"],2,"(½)¹⁰ = 1/1024."],
+["1000 people try 10 flips. P(nobody gets 10 heads) ≈",["0.377","0.623","0.5","0.001"],0,"(1023/1024)^1000 ≈ 0.377."],
+["Same setup, P(at least one succeeds) ≈",["0.377","0.5","0.623","0.99"],2,"1 − 0.377."],
+["The lesson of the coin experiment:",["Rare events never happen","Repeating makes rare events fairly likely","Coins are biased","Samples are always right"],1,"Many tries make a fluke likely."],
+["A sample chosen deliberately without randomness risks:",["No error","Bias","Independence","Feasibility"],1,"It may not represent the population."],
+["A linear function’s growth rate is:",["Changing","Constant","Zero","Exponential"],1,"The slope is constant."],
+["The exponential constant e is about:",["3.14","2.718","1.618","1.414"],1,"e ≈ 2.718."],
+["As n grows, (1 − 1/n)ⁿ approaches:",["0","1","1/e","e"],2,"It tends to 1/e ≈ 0.368."]
+];
+let done=0,right=0;
+$("#qs").innerHTML=Q.map((q,i)=>`<div class="q" data-i="${i}"><b>${i+1}. ${q[0]}</b>${q[1].map((o,j)=>`<button class="o" data-j="${j}">${o}</button>`).join("")}<div class="ex">${q[3]}</div></div>`).join("");
+$("#qs").onclick=e=>{const b=e.target.closest(".o");if(!b)return;const d=b.closest(".q");if(d.dataset.d)return;d.dataset.d=1;const i=+d.dataset.i,j=+b.dataset.j;d.querySelectorAll(".o")[Q[i][2]].classList.add("ok");if(j!==Q[i][2])b.classList.add("no");else right++;done++;d.querySelector(".ex").classList.add("show");$("#score").textContent=`Score: ${right} / ${done} answered (of ${Q.length})`};
+
+const W=[
+["Short: Compare supervised, unsupervised and reinforcement learning.","Supervised: labeled data tells us which points are wrong and we adjust (e.g. moving a line). Unsupervised: no labels; we find structure such as clusters around centroids. Reinforcement: the system gets a reward for right actions and a penalty for wrong ones."],
+["Short: Distinguish population from sample and explain why bias matters.","The population is all the data; the sample is the part we have. We use the sample to infer the population. A non-random or deliberately chosen sample can be biased and misrepresent the population."],
+["Long: Show that with 1000 people each flipping a fair coin 10 times, at least one all-heads run is likely.","P(10 heads) = (½)¹⁰ = 1/1024, so P(not) = 1023/1024. For all 1000 people to fail: (1023/1024)¹⁰⁰⁰ ≈ 0.377. So P(at least one) = 1 − 0.377 ≈ 0.623. The point: a rare event becomes fairly likely when repeated enough. Link to e: (1 − 1/n)ⁿ → 1/e ≈ 0.368."],
+["Long: Explain how an exponential function differs from a linear one and why e matters.","A line has constant slope. An exponential has a changing slope: small changes in x cause large changes in y. With base &gt; 1 it grows, with base &lt; 1 it decays. The base e ≈ 2.718 appears when processes repeat many times, as in the limit (1 − 1/n)ⁿ → 1/e, and in examples such as galaxy expansion and chemical equations."]
+];
+$("#wq").innerHTML=W.map((w,i)=>`<details><summary>${i+1}. ${w[0]}</summary><p>${w[1]}</p></details>`).join("");
+</script></body></html>

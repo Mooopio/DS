@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lecture 1 — Lines, Vectors and the Perceptron Update</title>
+<style>
+:root{--bg:#fbfaf8;--fg:#1d1d1f;--mut:#6b6b70;--line:#dcdad5;--acc:#2d4a8a;--pos:#1f7a4d;--neg:#a63a3a;--hl:#fff1b8}
+:root[data-t=dark]{--bg:#141517;--fg:#e8e6e1;--mut:#9a9a9f;--line:#2f3033;--acc:#8fa8e0;--pos:#6cc496;--neg:#e08a8a;--hl:#4a4020}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.7 Georgia,'Iowan Old Style',serif}
+header,main{max-width:720px;margin:0 auto;padding:0 22px}
+header{padding-top:56px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 .3em;font-weight:600}
+h2{font-size:1.4rem;margin:2.2em 0 .5em;font-weight:600}
+h3{font-size:1.05rem;margin:1.6em 0 .3em;font-weight:600}
+p,li{max-width:66ch}
+.sub{color:var(--mut);margin:0 0 1.6em}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 22px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;z-index:5}
+nav button,.b{font:15px system-ui,sans-serif;background:none;border:1px solid transparent;color:var(--mut);padding:6px 12px;border-radius:6px;cursor:pointer}
+nav button.on{color:var(--fg);border-color:var(--line)}
+nav .sp{flex:1}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+section{display:none;padding-bottom:80px}section.on{display:block}
+mark{background:var(--hl);color:inherit;padding:0 .15em}
+.def{border-left:3px solid var(--acc);padding:.1em 0 .1em 1em;margin:1.2em 0}
+.trap{border-left:3px solid var(--neg);padding:.1em 0 .1em 1em;margin:1.2em 0}
+.mn{font-style:italic;color:var(--mut)}
+table{border-collapse:collapse;width:100%;font:15px/1.5 system-ui,sans-serif;margin:1em 0}
+td,th{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.fig{margin:1.4em 0}.fig svg{width:100%;max-width:420px;height:auto;display:block}
+.fig figcaption{font:14px/1.5 system-ui,sans-serif;color:var(--mut);max-width:60ch}
+details{border-top:1px solid var(--line);padding:.6em 0}
+summary{cursor:pointer;font-weight:600}
+.q{border-top:1px solid var(--line);padding:1.2em 0}
+.o{display:block;width:100%;text-align:left;font:16px/1.5 system-ui,sans-serif;background:none;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.o.ok{border-color:var(--pos);color:var(--pos)}.o.no{border-color:var(--neg);color:var(--neg)}
+.ex{display:none;font:15px/1.6 system-ui,sans-serif;color:var(--mut);margin-top:6px}.ex.show{display:block;animation:f .25s}
+@keyframes f{from{opacity:0}to{opacity:1}}
+.sc{font:15px system-ui;color:var(--mut)}
+code{font:.9em ui-monospace,monospace}
+svg text{font:12px system-ui,sans-serif;fill:var(--fg)}
+.ax{stroke:var(--line)}.ln{stroke:var(--acc);stroke-width:2}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body>
+<nav id="nav"></nav>
+<header><h1>Lines, vectors and the perceptron update</h1>
+<p class="sub">Lecture 1 exam system. Built from the lecture transcript (reconstructed from messy speech-to-text, so verify wording against your slides).</p></header>
+<main>
+
+<section id="explain">
+<h2>1. The problem</h2>
+<p>We have points of two classes and want a <b>straight line</b> that separates them. Points on one side are <mark>positive</mark>, points on the other are <mark>negative</mark>. Learning means moving the line until every point lands on its correct side.</p>
+
+<h2>2. Line basics</h2>
+<div class="def"><b>Slope</b> (ميل / انحدار, also “regression” in the lecture’s wording) is the ratio of the change in y to the change in x: <code>Δy / Δx</code>. Equation: <code>y = mx + b</code>.</div>
+<ul><li><b>Same slope</b> means the same line (in the lecture’s setup). <b>Different slope</b> means a different line, hence a different classification.</li>
+<li>Above the line is positive, below is negative. If you stand above it, you are positive.</li>
+<li>Different lines classify the same data differently. A point sent to the wrong side is <b>misclassified</b>.</li></ul>
+
+<h2>3. Lines and points as vectors</h2>
+<p>Instead of writing the whole equation, we represent the line by one vector. A <b>point</b> is also a vector: its coordinates along the axes (x, y, z…) measured from the <b>origin</b>. In computer science the origin is conventionally zero.</p>
+<div class="def"><b>Vector</b> = direction + magnitude (“force”). A point as a vector starts at the origin and ends at the point. A line is not a vector, but the weight vector <b>w</b> that represents it is.</div>
+<p><b>Key convention:</b> the vector <b>w</b> representing a line is <mark>perpendicular to the line</mark> and points to its <mark>positive side</mark>. Tilt the line and w tilts with it, always staying at 90°.</p>
+<p><b>Bias.</b> The lecture drops the intercept b and lets the line pass through the origin (b = 0), so w alone defines it.</p>
+<figure class="fig" id="f1"></figure>
+
+<h2>4. Which side is a point on? The dot product</h2>
+<p>Plug the point into the weights and look only at the <b>sign</b>:</p>
+<div class="def"><code>wᵀx = w₁x₁ + w₂x₂ + …</code><br>&gt; 0 positive side · &lt; 0 negative side · = 0 exactly on the line.</div>
+<p><b>Dot product</b> means multiply matching components, then add everything. Vectors are written as columns, so the first one must be <b>transposed</b> (column to row) for the multiplication to be defined. It works unchanged in any number of dimensions (the lecture mentions x with 14 features).</p>
+<p><i>Illustrative example (our numbers):</i> w = (−1, 1), x = (2, −1). Then wᵀx = (−1)(2) + (1)(−1) = −3, so x is on the negative side.</p>
+<p><b>Geometric meaning.</b> The sign of wᵀx is the sign of the cosine of the angle between w and x. Angle below 90° (acute) gives positive. Angle above 90° (obtuse) gives negative.</p>
+
+<h2>5. Fixing a mistake: the update rule</h2>
+<p>If a point is misclassified, change w (so the line rotates). Two cases, using vector addition and subtraction:</p>
+<table><tr><th>Mistake</th><th>Angle with w</th><th>Fix</th><th>Why</th></tr>
+<tr><td>Positive point, predicted negative</td><td>obtuse</td><td><b>w_new = w + x</b></td><td>The sum falls between w and x, so the angle shrinks and x moves inside.</td></tr>
+<tr><td>Negative point, predicted positive</td><td>acute</td><td><b>w_new = w − x</b></td><td>The difference lands outside, pushing x out past 90°.</td></tr></table>
+<p><b>One formula.</b> Fix the labels as y = +1 or y = −1, then both cases are <code>w_new = w + y·x</code>.</p>
+<figure class="fig" id="f2"></figure>
+<figure class="fig" id="f3"></figure>
+<p>Interpret both figures: w moves to (1, 0), the line stays perpendicular to it, and the point now has the right sign. The “+” case is the top figure, the “−” case the bottom.</p>
+<p>Repeat: loop over the points, update on each mistake. This is the <b>Perceptron Learning Algorithm</b> (the lecture calls it PLA).</p>
+
+<h2>6. Hypothesis vs target</h2>
+<p>The true rule <b>f(x)</b> (the <i>target function</i>) is unknown. We only guess a <b>hypothesis</b> h(x) and improve it using data. Data is what lets us learn, and the computer is only as clever as the person who designed the procedure.</p>
+
+<h2>7. When a straight line is not enough</h2>
+<p>Some data cannot be split by any line. A curve such as <code>x² + x + b = 0</code> (a <b>polynomial</b>) can. <b>Degree</b> is the highest exponent. Raising the degree adds bends; a line is the degree-1 case. The lecture also notes that a linear model with many features is <b>dimensional</b>, while polynomial terms are treated as a part of it.</p>
+<div class="trap"><b>Traps.</b> (1) w is perpendicular to the line, not along it. (2) Subtract for a negative point, add for a positive one. (3) A point with wᵀx = 0 is neither class yet. (4) The dot product needs the transpose.</div>
+<p class="mn">Memory trigger: “Positive Pulls in (add), Negative Needs pushing (subtract).”</p>
+</section>
+
+<section id="summary">
+<h2>Summary</h2>
+<ul>
+<li><b>Goal:</b> a line separating positive from negative points.</li>
+<li><b>Slope</b> = Δy/Δx. Same slope = same line.
+<li><b>Line as vector:</b> <b>w</b> ⟂ line, pointing to the <b>positive</b> side. Bias dropped (line through origin).</li>
+<li><b>Point as vector:</b> coordinates from the origin.</li>
+<li><b>Classify:</b> sign of <b>wᵀx</b> (dot product, transpose needed).</li>
+<li><b>Angle view:</b> acute = positive, obtuse = negative.</li>
+<li><b>Update:</b> mistake on positive → <b>w + x</b>. Mistake on negative → <b>w − x</b>. Combined: <b>w + y·x</b>.</li>
+<li><b>Hypothesis</b> ≠ <b>target</b>; the target is unknown.</li>
+<li><b>Non-separable data</b> → polynomial (degree = highest exponent).</li></ul>
+<h3>Spaced repetition</h3>
+<p>Review after 1 day, 3 days, 7 days. Each time, redraw Figure 2 from memory and compute one dot product by hand.</p>
+<h3>Similar concepts</h3>
+<table><tr><th></th><th>Add (w + x)</th><th>Subtract (w − x)</th></tr>
+<tr><td>True label</td><td>+</td><td>−</td></tr><tr><td>Wrongly got</td><td>wᵀx &lt; 0</td><td>wᵀx &gt; 0</td></tr>
+<tr><td>Angle before</td><td>obtuse</td><td>acute</td></tr><tr><td>Result</td><td>w turns toward x</td><td>w turns away from x</td></tr></table>
+</section>
+
+<section id="mcq"><h2>Multiple choice</h2><p class="sc" id="score">Tap an answer to check it.</p><div id="qs"></div></section>
+
+<section id="written"><h2>Written questions</h2><div id="wq"></div></section>
+
+<section id="rev">
+<h2>Night-before sheet</h2>
+<table>
+<tr><td>Slope</td><td>Δy / Δx</td></tr>
+<tr><td>Line as vector</td><td>w ⟂ line, points to positive side</td></tr>
+<tr><td>Side test</td><td>sign(wᵀx): + / − / 0 on line</td></tr>
+<tr><td>Dot product</td><td>multiply matching entries, then sum; transpose first</td></tr>
+<tr><td>Positive point wrong</td><td>w ← w + x</td></tr>
+<tr><td>Negative point wrong</td><td>w ← w − x</td></tr>
+<tr><td>Unified</td><td>w ← w + y·x, y ∈ {+1, −1}</td></tr>
+<tr><td>Angle</td><td>&lt; 90° positive, &gt; 90° negative</td></tr>
+<tr><td>Add vs subtract</td><td>sum lies between them, difference lies outside</td></tr>
+<tr><td>Unknown</td><td>target f; we use hypothesis h</td></tr>
+<tr><td>Not separable</td><td>use polynomial; degree = highest exponent</td></tr></table>
+<p class="mn">Do this: compute wᵀx, find mistakes, update, repeat.</p>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const secs=[["explain","Explain"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+const nav=$("#nav");
+secs.forEach(([id,t],i)=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>show(id);b.dataset.id=id;nav.append(b)});
+nav.insertAdjacentHTML("beforeend",'<span class="sp"></span><button id="th" aria-label="Toggle theme">Dark</button>');
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));nav.querySelectorAll("button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===id));scrollTo(0,0)}
+$("#th").onclick=()=>{const r=document.documentElement,d=r.dataset.t==="dark";r.dataset.t=d?"":"dark";$("#th").textContent=d?"Dark":"Light"};
+show("explain");
+
+// diagrams: origin (150,120), 30px per unit
+const P=v=>[150+30*v[0],120-30*v[1]];
+function arrow(v,c,l,dx=6,dy=-6){const[a,b]=P(v);return `<line x1="150" y1="120" x2="${a}" y2="${b}" stroke="${c}" stroke-width="2.5" marker-end="url(#m${c.length})"/><text x="${a+dx}" y="${b+dy}" fill="${c}">${l}</text>`}
+function dot(v,c,l){const[a,b]=P(v);return `<circle cx="${a}" cy="${b}" r="5" fill="${c}"/><text x="${a+8}" y="${b+4}">${l}</text>`}
+function lineThrough(d){const a=P([-4*d[0],-4*d[1]]),b=P([4*d[0],4*d[1]]);return `<line class="ln" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`}
+function svg(inner){return `<svg viewBox="0 0 300 240" role="img"><defs><marker id="m7" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="currentColor"/></marker></defs><line class="ax" x1="10" y1="120" x2="290" y2="120"/><line class="ax" x1="150" y1="10" x2="150" y2="230"/>${inner}</svg>`}
+const G="#1f7a4d",R="#a63a3a",B="#2d4a8a";
+$("#f1").innerHTML=svg(lineThrough([1,1])+arrow([-1.5,1.5],B,"w")+dot([-2,1],G,"+")+dot([2,-1],R,"−")+dot([-3,2.5],G,"+")+dot([3,-2],R,"−"))+"<figcaption>Figure 1. The line passes through the origin. w is perpendicular to it and points at the positive side, so “+” points sit on w’s side and “−” points opposite.</figcaption>";
+function upd(x,lab,sym,wn,note){return svg(lineThrough([0,1])+arrow([-1,1],B,"w",-18)+arrow(x,"#888","x")+arrow(wn,G,"w new",4,-8)+dot(x,lab==="+"?G:R,lab))+`<figcaption>${note}</figcaption>`}
+$("#f2").innerHTML=upd([2,-1],"+","+",[1,0],"Figure 2. Positive point x = (2, −1), w = (−1, 1). wᵀx = −3, a mistake. w + x = (1, 0), and x now has a positive dot product (2). The old line is drawn; the new line is vertical, perpendicular to the new w.");
+$("#f3").innerHTML=upd([-2,1],"−","−",[1,0],"Figure 3. Negative point x = (−2, 1), same w. wᵀx = +3, a mistake. w − x = (1, 0), and x now gives −2, so it is correctly negative.");
+
+// MCQs: [question, options, correct index, explanation]
+const Q=[
+["A line is described by y = mx + b. What is m?",["The intercept","Δy/Δx","The origin","The angle only"],1,"Slope is the change in y per change in x."],
+["Two lines have the same slope in this lecture’s setup. They are:",["Different lines","The same line","Perpendicular","Not comparable"],1,"Same slope = same line (intercept dropped)."],
+["The weight vector w is _____ to the line.",["Parallel","Perpendicular","At 45°","Unrelated"],1,"w is always perpendicular to the line it represents."],
+["w points toward the:",["Negative side","Positive side","Origin","Line itself"],1,"By convention w points to the positive side."],
+["If you tilt the line, w:",["Stays fixed","Tilts with it, staying perpendicular","Becomes parallel","Disappears"],1,"They stay at 90°."],
+["The sign of wᵀx tells you:",["Distance only","Which side of the line x is on","The slope","The bias"],1,"Positive, negative, or on the line."],
+["wᵀx = 0 means x is:",["Positive","Negative","On the line","Misclassified"],2,"Zero dot product: neither side."],
+["The dot product multiplies matching components and then:",["Subtracts","Divides","Adds","Takes the max"],2,"Products are summed."],
+["Why transpose w?",["To change its length","So row × column multiplication is defined","To flip the sign","It is optional"],1,"Vectors are columns."],
+["w = (−1, 1), x = (2, −1). wᵀx = ?",["−3","3","−1","1"],0,"(−1)(2) + (1)(−1) = −3."],
+["Acute angle between w and x means x is:",["Positive","Negative","On the line","Undefined"],0,"cos &gt; 0."],
+["Obtuse angle between w and x means:",["Positive","Negative","Misclassified always","Parallel"],1,"cos &lt; 0."],
+["A positive point is misclassified. Update:",["w − x","w + x","w · x","w / x"],1,"Adding pulls w toward x."],
+["A negative point is misclassified. Update:",["w + x","w − x","x − w","no update"],1,"Subtracting pushes w away."],
+["With labels y = ±1, the single update formula is:",["w + y·x","w · y·x","w − y","y / x"],0,"y supplies the sign."],
+["Why does w + x reduce the angle with x?",["The sum lies between w and x","It doubles w","It deletes x","It rotates x"],0,"The parallelogram diagonal falls between them."],
+["Why does w − x take x outside the positive side?",["Difference lies outside the two vectors","It is shorter","It is longer","Random"],0,"The result points away from x."],
+["The unknown true rule is called the:",["Hypothesis","Target function","Bias","Regression"],1,"Target f is unknown; we use a hypothesis."],
+["A degree-3 polynomial has highest exponent:",["1","2","3","4"],2,"Degree = highest exponent."],
+["Data no line can separate. Best move:",["Give up","Use a higher-degree curve","Use only x","Delete points"],1,"Polynomials add flexibility."]
+];
+let done=0,right=0;
+$("#qs").innerHTML=Q.map((q,i)=>`<div class="q" data-i="${i}"><b>${i+1}. ${q[0]}</b>${q[1].map((o,j)=>`<button class="o" data-j="${j}">${o}</button>`).join("")}<div class="ex">${q[3]}</div></div>`).join("");
+$("#qs").onclick=e=>{const b=e.target.closest(".o");if(!b)return;const d=b.closest(".q");if(d.dataset.d)return;d.dataset.d=1;const i=+d.dataset.i,j=+b.dataset.j;d.querySelectorAll(".o")[Q[i][2]].classList.add("ok");if(j!==Q[i][2])b.classList.add("no");else right++;done++;d.querySelector(".ex").classList.add("show");$("#score").textContent=`Score: ${right} / ${done} answered (of ${Q.length})`};
+
+const W=[
+["Short: Why is w perpendicular to the line, and why does it matter?","w points to the positive side and the line sits at 90° to it, so the sign of wᵀx immediately tells which side a point is on. Rotating w rotates the line."],
+["Short: State the update rule for both mistake types.","Positive mistaken as negative: w ← w + x. Negative mistaken as positive: w ← w − x. Together: w ← w + y·x with y = ±1."],
+["Long: Explain how the algorithm classifies points and corrects mistakes, with a worked example.","Represent the line by w (perpendicular, pointing positive, bias dropped). For each point compute wᵀx (multiply matching components, sum; w transposed). Sign gives the class. Example: w = (−1, 1), x = (2, −1) labelled positive. wᵀx = −3, so it is wrong. Update w + x = (1, 0). Now wᵀx = 2 &gt; 0 so x is correct. The line is rotated to stay perpendicular to the new w. Repeat over all points until none is misclassified."],
+["Long: Why does adding help positives and subtracting help negatives? Use angles.","A positive point should form an acute angle with w. If the angle is obtuse, w + x lies between w and x, so the angle shrinks. A negative point should form an obtuse angle. If it is acute, w − x lies outside, enlarging the angle past 90°. Each step moves the classification of that point toward correct."]
+];
+$("#wq").innerHTML=W.map((w,i)=>`<details><summary>${i+1}. ${w[0]}</summary><p>${w[1]}</p></details>`).join("");
+</script></body></html>

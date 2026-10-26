@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lecture 3 — Hoeffding and the Feasibility of Learning</title>
+<style>
+:root{--bg:#fbfaf8;--fg:#1d1d1f;--mut:#6b6b70;--line:#dcdad5;--acc:#2d4a8a;--pos:#1f7a4d;--neg:#a63a3a;--hl:#fff1b8}
+:root[data-t=dark]{--bg:#141517;--fg:#e8e6e1;--mut:#9a9a9f;--line:#2f3033;--acc:#8fa8e0;--pos:#6cc496;--neg:#e08a8a;--hl:#4a4020}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.7 Georgia,'Iowan Old Style',serif}
+header,main{max-width:720px;margin:0 auto;padding:0 22px}
+header{padding-top:56px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 .3em;font-weight:600}
+h2{font-size:1.4rem;margin:2.2em 0 .5em;font-weight:600}
+h3{font-size:1.05rem;margin:1.6em 0 .3em;font-weight:600}
+p,li{max-width:66ch}
+.sub{color:var(--mut);margin:0 0 1.6em}
+nav{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 22px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;z-index:5}
+nav button{font:15px system-ui,sans-serif;background:none;border:1px solid transparent;color:var(--mut);padding:6px 12px;border-radius:6px;cursor:pointer}
+nav button.on{color:var(--fg);border-color:var(--line)}
+nav .sp{flex:1}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+section{display:none;padding-bottom:80px}section.on{display:block}
+mark{background:var(--hl);color:inherit;padding:0 .15em}
+.def{border-left:3px solid var(--acc);padding:.1em 0 .1em 1em;margin:1.2em 0}
+.trap{border-left:3px solid var(--neg);padding:.1em 0 .1em 1em;margin:1.2em 0}
+.mn{font-style:italic;color:var(--mut)}
+table{border-collapse:collapse;width:100%;font:15px/1.5 system-ui,sans-serif;margin:1em 0}
+td,th{border-bottom:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.fig{margin:1.4em 0}.fig svg{width:100%;max-width:440px;height:auto;display:block}
+.fig figcaption{font:14px/1.5 system-ui,sans-serif;color:var(--mut);max-width:60ch}
+details{border-top:1px solid var(--line);padding:.6em 0}
+summary{cursor:pointer;font-weight:600}
+.q{border-top:1px solid var(--line);padding:1.2em 0}
+.o{display:block;width:100%;text-align:left;font:16px/1.5 system-ui,sans-serif;background:none;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:6px 0;cursor:pointer}
+.o.ok{border-color:var(--pos);color:var(--pos)}.o.no{border-color:var(--neg);color:var(--neg)}
+.ex{display:none;font:15px/1.6 system-ui,sans-serif;color:var(--mut);margin-top:6px}.ex.show{display:block;animation:f .25s}
+@keyframes f{from{opacity:0}to{opacity:1}}
+.sc,.rd{font:15px system-ui;color:var(--mut)}
+.tool{border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:1.4em 0;font:15px/1.8 system-ui,sans-serif}
+.tool input{width:100%}
+code{font:.9em ui-monospace,monospace}
+svg text{font:12px system-ui,sans-serif;fill:var(--fg)}
+.ax{stroke:var(--line);fill:none}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body>
+<nav id="nav"></nav>
+<header><h1>Hoeffding and the feasibility of learning</h1>
+<p class="sub">Lecture 3 exam system, built from a rough speech-to-text transcript. Verify formulas and notation against your slides.</p></header>
+<main>
+
+<section id="explain">
+<h2>1. The problem we left open</h2>
+<p>We draw a line on the points we can see (say red and green) and it looks correct. But we never saw every point, so on new data the line may misclassify. We can never know the whole <b>population</b>, so we learn from a <b>sample</b> and ask how far the sample can mislead us.</p>
+<ul><li><b>ν</b> (nu) is the quantity measured on the <b>sample</b>. <b>μ</b> (mu) is the same quantity on the <b>population</b>. The lecture says it will switch to different notation later, but they play the same roles.</li>
+<li>We do not know μ. We only estimate it with ν.</li></ul>
+
+<h2>2. What is a “bad event”?</h2>
+<div class="def"><b>Bad event</b> = our learned rule predicts wrongly on a new data point because the sample misled us. We want the probability of a bad event to be <mark>as small as possible</mark>.</div>
+<p><b>Intuition:</b> the bigger the sample, the closer it is to the population, so the smaller the chance of a bad event. A bigger sample size <b>N</b> is the practical proxy for knowing more about the population.</p>
+
+<h2>3. Measuring quality with errors</h2>
+<p>Any candidate line (hypothesis) is judged by the <b>errors</b> it makes. We want the model with fewer errors.</p>
+<ul><li><b>In-sample error</b> (E<sub>in</sub>): error on the data we trained on, playing the role of ν.</li>
+<li><b>Out-of-sample error</b> (E<sub>out</sub>): error on the population or new data, playing the role of μ.</li>
+<li>For regression, errors are the vertical differences between line and points, summed.</li>
+<li>Two different lines can be “the same” to us if they make the same errors.</li></ul>
+<div class="def">Bad event: <code>|E<sub>in</sub> − E<sub>out</sub>| &gt; ε</code>, where ε is a small tolerance we choose.</div>
+
+<h2>4. Hoeffding inequality</h2>
+<div class="def"><code>P( |ν − μ| &gt; ε ) ≤ 2 · e<sup>−2ε²N</sup></code></div>
+<ul>
+<li>It gives an <b>upper bound</b> (“less than”), not an exact value. It is <b>approximate</b> and <b>probable</b>, so we speak of probability that can be measured, not of “possible”.</li>
+<li><b>N up</b> → exponent more negative → bound drops very fast.</li>
+<li><b>ε down</b> (stricter tolerance) → bound rises. If it exceeds 1 it tells us nothing.</li>
+<li>It does <b>not</b> need the unknown μ; it depends on N and ε only.</li></ul>
+<div class="tool"><b>Try it.</b><br>
+N = <b id="nv">500</b> <input id="N" type="range" min="1" max="2000" value="500"><br>
+ε = <b id="ev">0.10</b> <input id="E" type="range" min="1" max="30" value="10"><br>
+M (hypotheses) = <b id="mv">1</b> <input id="M" type="range" min="1" max="1000" value="1"><br>
+Bound = <b id="bv"></b></div>
+<figure class="fig" id="f1"></figure>
+<p><i>Worked numbers:</i> ε = 0.1, N = 100 gives 2e⁻² ≈ 0.27. N = 500 gives 2e⁻¹⁰ ≈ 9×10⁻⁵. N = 1000 gives 2e⁻²⁰ ≈ 4×10⁻⁹.</p>
+
+<h2>5. Many hypotheses: two factors</h2>
+<p>We usually choose among <b>M</b> hypotheses, and the final choice <b>g</b> (our approximation of the unknown target f) could be bad if <i>any</i> of them is bad. Adding the probabilities over hypotheses multiplies the bound by M (the lecture says “sum over the hypotheses”):</p>
+<div class="def"><code>P( |E<sub>in</sub>(g) − E<sub>out</sub>(g)| &gt; ε ) ≤ 2M · e<sup>−2ε²N</sup></code></div>
+<p>So two factors control generalization: the <b>number of data points N</b> (more is better) and the <b>number of hypotheses M</b> (more is riskier). They complement each other.</p>
+<figure class="fig" id="f2"></figure>
+
+<h2>6. Testing, memorization and limits</h2>
+<ul><li>Memorizing the training data is not learning. A test on data you trained on proves nothing, so <b>hide some points</b> and test on them (example in the lecture: 700 of 1000 for training, repeating with different selections).</li>
+<li>Increasing data helps, but if you only memorize a pattern you will answer wrongly on unseen cases. The lecture warns against studying “two or three books” and thinking you know everything.</li>
+<li>Learning stays a probability of being right or wrong. There is always a small chance of failure.</li></ul>
+<p><b>Properties:</b> the lecture credits the idea to Hoeffding. The result makes learning <b>probable</b> (measurable) and <b>approximate</b> (we bound, we do not equate).</p>
+
+<h2>7. Study advice from the lecture</h2>
+<p>Review the same day, after two days, and after a week; the chance of forgetting drops (the lecturer quotes about 15%). Write it out and explain it to yourself or a peer. Understand the intuition and rebuild the formula instead of memorizing it.</p>
+<div class="trap"><b>Traps.</b> (1) Hoeffding is “≤”, not “=”. (2) Bigger N lowers the bound, bigger M raises it. (3) Smaller ε raises the bound. (4) A bound above 1 is useless. (5) E<sub>in</sub> is sample, E<sub>out</sub> is population.</div>
+<p class="mn">Memory trigger: “More Numbers, fewer Mistakes (N up, bound down).”</p>
+</section>
+
+<section id="summary">
+<h2>Summary</h2>
+<ul>
+<li>Sample (ν, E<sub>in</sub>) vs population (μ, E<sub>out</sub>). We never know μ.</li>
+<li>Bad event: sample misleads, so <code>|ν − μ| &gt; ε</code>.</li>
+<li><b>Hoeffding:</b> <code>P ≤ 2e<sup>−2ε²N</sup></code>.</li>
+<li>N ↑ → bound ↓ (exponentially). ε ↓ → bound ↑.</li>
+<li>With M hypotheses: <code>2M·e<sup>−2ε²N</sup></code>.</li>
+<li>Hypotheses are judged by their errors.</li>
+<li>Test on unseen data. Memorizing is not learning.</li>
+<li>Result is <b>probable</b> and <b>approximate</b>.</li></ul>
+<h3>Spaced repetition</h3>
+<p>Day 1, 3, 7: write the inequality from memory and explain each symbol aloud.</p>
+<h3>Compare</h3>
+<table><tr><th></th><th>Increase N</th><th>Increase M</th><th>Decrease ε</th></tr>
+<tr><td>Bound</td><td>falls</td><td>rises</td><td>rises</td></tr>
+<tr><td>Effect</td><td>safer generalization</td><td>more risk of a bad pick</td><td>stricter, less certain</td></tr></table>
+</section>
+
+<section id="mcq"><h2>Multiple choice</h2><p class="sc" id="score">Tap an answer to check it.</p><div id="qs"></div></section>
+<section id="written"><h2>Written questions</h2><div id="wq"></div></section>
+
+<section id="rev">
+<h2>Night-before sheet</h2>
+<table>
+<tr><td>Sample / population</td><td>ν, E<sub>in</sub> / μ, E<sub>out</sub></td></tr>
+<tr><td>Bad event</td><td>|E<sub>in</sub> − E<sub>out</sub>| &gt; ε</td></tr>
+<tr><td>Hoeffding</td><td>P ≤ 2e<sup>−2ε²N</sup></td></tr>
+<tr><td>With M hypotheses</td><td>P ≤ 2M e<sup>−2ε²N</sup></td></tr>
+<tr><td>N up</td><td>bound down fast</td></tr>
+<tr><td>ε down</td><td>bound up</td></tr>
+<tr><td>M up</td><td>bound up</td></tr>
+<tr><td>Learning is</td><td>probable and approximate</td></tr>
+<tr><td>Testing</td><td>use held-out data</td></tr>
+<tr><td>Numbers</td><td>ε=0.1: N=100 → 0.27; N=500 → 9×10⁻⁵</td></tr></table>
+</section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const secs=[["explain","Explain"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+const nav=$("#nav");
+secs.forEach(([id,t])=>{const b=document.createElement("button");b.textContent=t;b.onclick=()=>show(id);b.dataset.id=id;nav.append(b)});
+nav.insertAdjacentHTML("beforeend",'<span class="sp"></span><button id="th" aria-label="Toggle theme">Dark</button>');
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));nav.querySelectorAll("button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===id));scrollTo(0,0)}
+$("#th").onclick=()=>{const r=document.documentElement,d=r.dataset.t==="dark";r.dataset.t=d?"":"dark";$("#th").textContent=d?"Dark":"Light"};
+show("explain");
+
+function calc(){const N=+$("#N").value,e=$("#E").value/100,M=+$("#M").value;$("#nv").textContent=N;$("#ev").textContent=e.toFixed(2);$("#mv").textContent=M;
+const b=2*M*Math.exp(-2*e*e*N);$("#bv").textContent=b>=1?"≥ 1 (no information)":b.toExponential(2)}
+["N","E","M"].forEach(i=>$("#"+i).oninput=calc);calc();
+
+// Figure 1: bound vs N
+(function(){const path=e=>{let d="";for(let n=0;n<=1000;n+=10){const v=Math.min(1,2*Math.exp(-2*e*e*n));d+=(n?"L":"M")+(40+240*n/1000)+","+(170-140*v)+" "}return d};
+$("#f1").innerHTML=`<svg viewBox="0 0 300 200" role="img"><line class="ax" x1="40" y1="170" x2="280" y2="170"/><line class="ax" x1="40" y1="20" x2="40" y2="170"/><path d="${path(.1)}" fill="none" stroke="var(--acc)" stroke-width="2.5"/><path d="${path(.05)}" fill="none" stroke="var(--mut)" stroke-width="2"/><text x="120" y="150" fill="var(--acc)">ε = 0.10</text><text x="170" y="60" fill="var(--mut)">ε = 0.05</text><text x="40" y="188">N (0 to 1000)</text><text x="14" y="24">1</text><text x="14" y="174">0</text></svg><figcaption>Figure 1. Hoeffding bound (capped at 1) against sample size N. A tighter tolerance (smaller ε) needs far more data before the bound becomes small.</figcaption>`})();
+
+// Figure 2: sample vs population diagram
+$("#f2").innerHTML=`<svg viewBox="0 0 300 200" role="img"><rect x="10" y="20" width="110" height="70" rx="8" fill="none" stroke="var(--fg)"/><text x="22" y="48">Population</text><text x="22" y="68">μ, E_out (unknown)</text><rect x="180" y="20" width="110" height="70" rx="8" fill="none" stroke="var(--fg)"/><text x="192" y="48">Sample (N points)</text><text x="192" y="68">ν, E_in (measured)</text><line x1="180" y1="55" x2="122" y2="55" stroke="var(--acc)" stroke-width="2"/><text x="132" y="45" fill="var(--acc)">draw</text><rect x="70" y="120" width="160" height="50" rx="8" fill="none" stroke="var(--acc)"/><text x="82" y="142">P(|ν − μ| &gt; ε) ≤ 2M e^(−2ε²N)</text><text x="82" y="160">N ↑ helps, M ↑ hurts</text><line x1="235" y1="90" x2="200" y2="120" stroke="var(--mut)"/><line x1="65" y1="90" x2="100" y2="120" stroke="var(--mut)"/></svg><figcaption>Figure 2. We cannot see the population, so Hoeffding tells us how likely the sample is to mislead us.</figcaption>`;
+
+const Q=[
+["In this lecture, ν refers to:",["Population quantity","Sample quantity","A hypothesis","The tolerance"],1,"ν is measured on the sample."],
+["μ refers to:",["Population quantity","Sample quantity","Number of points","Number of lines"],0,"μ is the population value."],
+["Why can’t we just use the population?",["It is too small","We cannot know or count all of it","It has no labels","It is biased"],1,"It is unknown or too hard to enumerate."],
+["A “bad event” is:",["Sample matches population","Sample misleads us, causing wrong predictions","A big N","A large M"],1,"We want its probability small."],
+["As N grows, the chance of a bad event:",["Rises","Falls","Stays fixed","Becomes 1"],1,"A bigger sample is closer to the population."],
+["The Hoeffding bound is:",["P ≥ 2e^(−2ε²N)","P ≤ 2e^(−2ε²N)","P = e^(−N)","P = 2εN"],1,"It is an upper bound."],
+["Increasing ε (a looser tolerance) makes the bound:",["Larger","Smaller","Unchanged","Undefined"],1,"The exponent grows more negative."],
+["Decreasing ε makes the bound:",["Smaller","Larger","Zero","Unchanged"],1,"A stricter tolerance is harder to guarantee."],
+["ε = 0.1, N = 100 gives about:",["0.27","0.0009","1.5","0"],0,"2e⁻² ≈ 0.27."],
+["ε = 0.1, N = 500 gives about:",["0.27","9×10⁻⁵","0.5","2"],1,"2e⁻¹⁰ ≈ 9×10⁻⁵."],
+["A bound larger than 1 means:",["Certainty","No useful information","A bug in the data","Zero error"],1,"A probability cannot exceed 1."],
+["Does Hoeffding require knowing μ?",["Yes","No, only N and ε","Only M","Only ν"],1,"The bound uses N and ε."],
+["With M hypotheses the bound becomes:",["2e^(−2ε²N)/M","2M e^(−2ε²N)","M e^(ε²N)","2e^(−2ε²NM)"],1,"Sum over hypotheses multiplies by M."],
+["Increasing M (more hypotheses) makes a bad pick:",["Less likely","More likely","Impossible","Unaffected"],1,"More candidates raise the risk."],
+["Which two factors control generalization here?",["N and M","μ and ν","x and y","slope and bias"],0,"Data points and hypotheses."],
+["E_out stands for error on:",["Training data","Unseen/population data","Test labels only","Bias"],1,"Out of sample."],
+["Why hold out data for testing?",["To shrink N","Memorizing training data is not learning","To raise E_in","Tests are optional"],1,"We need unseen points."],
+["Hoeffding gives results that are:",["Exact","Probable and approximate","Impossible","Deterministic"],1,"A bound, not an equality."],
+["Two hypotheses are “equal” in this view if:",["Same slope","Same errors","Same colour","Same sample"],1,"We judge by errors."],
+["Best study habit from the lecture:",["Cram once","Review day 0, 2, 7 and explain it","Memorize formulas","Skip slides"],1,"Spaced review plus understanding."]
+];
+let done=0,right=0;
+$("#qs").innerHTML=Q.map((q,i)=>`<div class="q" data-i="${i}"><b>${i+1}. ${q[0]}</b>${q[1].map((o,j)=>`<button class="o" data-j="${j}">${o}</button>`).join("")}<div class="ex">${q[3]}</div></div>`).join("");
+$("#qs").onclick=e=>{const b=e.target.closest(".o");if(!b)return;const d=b.closest(".q");if(d.dataset.d)return;d.dataset.d=1;const i=+d.dataset.i,j=+b.dataset.j;d.querySelectorAll(".o")[Q[i][2]].classList.add("ok");if(j!==Q[i][2])b.classList.add("no");else right++;done++;d.querySelector(".ex").classList.add("show");$("#score").textContent=`Score: ${right} / ${done} answered (of ${Q.length})`};
+
+const W=[
+["Short: State the Hoeffding inequality and explain each symbol.","P(|ν − μ| &gt; ε) ≤ 2e^(−2ε²N). ν is the sample quantity, μ the population quantity, ε the tolerance, N the sample size. The left side is the probability that the sample misleads us by more than ε."],
+["Short: How do N, ε and M affect the bound?","Larger N makes the bound drop exponentially. Smaller ε raises it. Larger M raises it, because we sum over hypotheses and the bound becomes 2M e^(−2ε²N)."],
+["Long: Why is learning from a sample feasible even though we never know the population?","We can’t know μ, but Hoeffding bounds how far ν can be from μ using only N and ε. Using more data shrinks the chance of a bad event. So we can say, with high probability, that the in-sample error is close to the out-of-sample error. The result is probable and approximate, not certain. We still test on held-out data, because memorizing the training set is not learning."],
+["Long: Explain the trade-off between more data and more hypotheses.","More data (N) lowers the bad-event probability exponentially. More hypotheses (M) give us more chances to pick one that only looks good on the sample, so the bound grows linearly with M. Good learning needs enough N for the size of the hypothesis set. Also, memorizing a pattern from a large set does not guarantee correct answers on unseen cases."]
+];
+$("#wq").innerHTML=W.map((w,i)=>`<details><summary>${i+1}. ${w[0]}</summary><p>${w[1]}</p></details>`).join("");
+</script></body></html>

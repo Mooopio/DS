@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Linear Classification & Perceptron: Exam Prep</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--tx:#1d2330;--mut:#5c6578;--ac:#3b5bdb;--hl:#fff3bf;--ok:#2b8a3e;--no:#c92a2a;--bd:#e3e5ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161c;--card:#1d212b;--tx:#e8eaf0;--mut:#9aa3b5;--ac:#7c9cff;--hl:#4a4320;--ok:#69db7c;--no:#ff8787;--bd:#2d3342;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14161c;--card:#1d212b;--tx:#e8eaf0;--mut:#9aa3b5;--ac:#7c9cff;--hl:#4a4320;--ok:#69db7c;--no:#ff8787;--bd:#2d3342;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--bd);z-index:5;padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header h1{font-size:1rem;margin:0 auto 0 0}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:6px 12px;transition:.2s}
+button:hover{border-color:var(--ac)}button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:820px;margin:0 auto;padding:16px}
+section{display:none;animation:f .3s}section.on{display:block}@keyframes f{from{opacity:0;transform:translateY(6px)}}
+details{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin:10px 0;padding:4px 16px}
+summary{cursor:pointer;font-weight:600;padding:10px 0}
+mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:3px}
+code{background:var(--bd);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left}
+.tbl{overflow-x:auto}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.q button{display:block;width:100%;text-align:left;margin:6px 0}
+.q button.ok{border-color:var(--ok);color:var(--ok)}.q button.no{border-color:var(--no);color:var(--no)}
+.ex{display:none;color:var(--mut);margin-top:8px}.ex.s{display:block}
+.tip{border-left:4px solid var(--ac);padding:6px 12px;background:var(--card);margin:10px 0;border-radius:0 8px 8px 0}
+.trap{border-left:4px solid var(--no)}
+#score{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);background:var(--card);border:1px solid var(--bd);padding:6px 12px;border-radius:8px;display:inline-block}
+</style></head><body>
+<header><h1>Linear Classification & Perceptron</h1>
+<nav id="nav"></nav><button id="th">Dark/Light</button></header>
+<main>
+
+<section id="explain">
+<div class="tip">Source note: the lecture was an auto-transcript of Egyptian Arabic mixed with English and had gaps. Everything below is reconstructed from its clear parts (this is the <b>Perceptron Learning Algorithm, PLA</b> lecture).</div>
+
+<details open><summary>1. The big goal: classification with a line</summary>
+<p>We have points of two classes. We want a <b>straight line</b> that puts one class on the <mark>positive</mark> side (above) and the other on the <mark>negative</mark> side (below). A point on the wrong side is <b>misclassified</b>.</p>
+<p><b>Analogy:</b> a fence in a field separating sheep from goats. Misclassified = an animal on the wrong side.</p></details>
+
+<details><summary>2. Slope (انحدار / ميل) and the line equation</summary>
+<p><b>Slope</b> = Δy / Δx = how much y changes per change in x (translations: ميل / انحدار; “regression” also literally means انحدار). Line: <code>y = mx + b</code>.</p>
+<p>The lecturer drops <code>b</code> (the intercept) at first, so the line passes through the <b>origin</b>. Then <mark>two lines with the same slope are the same line</mark>; different slope means a different line, which means a different classification.</p></details>
+
+<details><summary>3. Points and lines as vectors</summary>
+<p>A point in space is described by its <b>coordinates</b> (x, y, z): its distances along each axis from the <b>origin</b>. A <b>vector</b> is a point plus a <mark>direction</mark> (and a magnitude = its length/“strength”), measured from the origin.</p>
+<p>A line is represented by one vector <b>w</b> (the weights) that is always <mark>perpendicular to the line</mark> and points toward the <b>positive side</b>. Rotate the line and w rotates with it, staying perpendicular. This replaces writing the full line equation.</p>
+<p><b>Analogy:</b> w is a flag pole standing straight up from a wall; the flag points to the “positive” room.</p></details>
+
+<details><summary>4. Deciding the sign: the dot product</summary>
+<p>For a point <b>x</b>, look at the angle between w and x:</p>
+<ul><li>Acute (&lt; 90°) → same side as w → <mark>positive</mark>, w·x &gt; 0</li>
+<li>Obtuse (&gt; 90°) → opposite side → <mark>negative</mark>, w·x &lt; 0</li>
+<li>Exactly 90° → on the line → w·x = 0, neither class (ambiguous)</li></ul>
+<p><b>Dot product</b>: multiply matching components, then <b>add</b>: <code>w·x = w₁x₁ + w₂x₂ + …</code> The result is a single number (scalar); only its <b>sign</b> matters: <code>h(x) = sign(wᵀx)</code>.</p>
+<p><b>Transpose:</b> to multiply two column vectors as matrices we write <code>wᵀx</code> (row × column). Same operation, proper notation.</p>
+<p>Contrast: the <b>Cartesian product</b> pairs every element with every other; the dot product multiplies <i>matching</i> elements and sums them.</p></details>
+
+<details><summary>5. The bias (intercept) trick</summary>
+<p>In <code>y = mx + b</code>, treat <b>b</b> as a weight on an extra input that is always <mark>1</mark> (the intercept’s coefficient is always 1). So x = (1, x₁, …) and w = (b, m, …). Now the whole thing is just <code>wᵀx</code>.</p></details>
+
+<details><summary>6. Fixing a mistake: the update rule (the heart of PLA)</summary>
+<p>Take a misclassified point x with true label y ∈ {+1, −1}. Move w using vector arithmetic; the new line is perpendicular to the new w.</p>
+<table><tr><th>Situation</th><th>Angle w–x</th><th>Update</th><th>Effect</th></tr>
+<tr><td>Should be <b>positive</b>, but is negative</td><td>Obtuse</td><td><mark>w ← w + x</mark></td><td>New w tilts toward x, angle shrinks, x pulled to the positive side</td></tr>
+<tr><td>Should be <b>negative</b>, but is positive</td><td>Acute</td><td><mark>w ← w − x</mark></td><td>New w tilts away from x, angle grows past 90°</td></tr></table>
+<p>Compactly: <code>w_new = w_old + y·x</code> (y = +1 adds, y = −1 subtracts). Adding gives a vector “in between” the two; subtracting gives one pushed “outside”.</p>
+<p><b>Caution:</b> fixing one point can break others (the line moves!). So we loop over the data repeatedly until <mark>no point is misclassified</mark>.</p></details>
+
+<details><summary>7. Hypothesis vs target function</summary>
+<p>The <b>target function f</b> is the true, unknown rule. If we knew it we would not need learning. We instead choose a <b>hypothesis h</b> (a guess, here a line defined by w) and use the data to tune it so h ≈ f. Sometimes the first guess is a misclassified point; that is normal and is exactly what the data corrects.</p>
+<p>Key idea: <mark>Can the data teach us the rule? Yes.</mark> The computer is fast, but a human decides how it thinks (the model and the algorithm).</p></details>
+
+<details><summary>8. When a line is not enough: polynomial features</summary>
+<p>If classes are arranged so <b>no straight line</b> separates them, use a curve, e.g. <code>ax² + bx + c = 0</code>. Add x² as a new feature, and the model is still <b>linear in its features</b>, so the same PLA works. <b>Polynomial degree</b> = the largest exponent (x³ → degree 3). More degree = more flexible curve (the lecturer: keep adding terms until the curve fits the data).</p>
+<p>Which matters more, x or y? Both; but we always look at <b>y</b> (the outcome): did it go up or down?</p></details>
+</section>
+
+<section id="summary">
+<div class="q"><ul>
+<li><b>Goal:</b> separate two classes with a line → <mark>positive / negative</mark> sides.</li>
+<li><b>Slope</b> = Δy/Δx (ميل/انحدار). Same slope &amp; through origin ⇒ same line.</li>
+<li><b>Vector</b> = coordinates + <b>direction</b> (+ magnitude).</li>
+<li><b>w ⟂ line</b>, pointing to the positive side.</li>
+<li><b>Sign test:</b> <code>sign(wᵀx)</code>; acute ⇒ +, obtuse ⇒ −, 90° ⇒ on the line.</li>
+<li><b>Dot product:</b> multiply matching entries, then sum → scalar.</li>
+<li><b>Bias:</b> extra input x₀ = 1.</li>
+<li><b>Update:</b> missed positive → <mark>w + x</mark>; missed negative → <mark>w − x</mark>.</li>
+<li><b>Repeat</b> until zero errors (works if data is linearly separable).</li>
+<li><b>Target f</b> unknown vs <b>hypothesis h</b> (our guess).</li>
+<li><b>Non-separable?</b> add polynomial terms (x²…); degree = max exponent.</li></ul></div>
+<h3>Memory triggers</h3>
+<div class="tip"><b>“Positive = Plus”:</b> a missed positive gets <b>+x</b>. A missed negative gets <b>−x</b>.</div>
+<div class="tip"><b>“Acute = Accept, Obtuse = Out.”</b></div>
+<div class="tip"><b>Spaced repetition:</b> redo the 20 MCQs today, in 1 day, in 3 days, in 7 days. Re-derive the update rule on paper each time.</div>
+<h3>Common mistakes &amp; traps</h3>
+<div class="tip trap">Confusing the <b>line</b> with <b>w</b>: w is perpendicular to the line, not along it.</div>
+<div class="tip trap">Mixing up the signs of the update (add for a missed <i>positive</i>).</div>
+<div class="tip trap">Thinking one update fixes everything: it can break other points; loop until no errors.</div>
+<div class="tip trap">Calling the dot product a vector: it is a <b>scalar</b>. Mixing it up with the Cartesian product.</div>
+<div class="tip trap">Forgetting the bias input of 1; forgetting a point with w·x = 0 is neither class.</div>
+<div class="tip trap">Thinking polynomial regression is “non-linear learning”: it is linear in the transformed features.</div>
+<h3>Compare</h3>
+<div class="tbl"><table><tr><th></th><th>Dot product</th><th>Cartesian product</th></tr><tr><td>Pairs</td><td>Matching elements</td><td>Every element with every element</td></tr><tr><td>Result</td><td>One number</td><td>Set of pairs</td></tr></table></div>
+<div class="tbl"><table><tr><th></th><th>Target f</th><th>Hypothesis h</th></tr><tr><td>Known?</td><td>No</td><td>Yes (we choose it)</td></tr><tr><td>Role</td><td>True rule</td><td>Our approximation</td></tr></table></div>
+</section>
+
+<section id="mcq"><p>Click an answer. <span id="score">Score: 0 / 0</span></p><div id="mq"></div></section>
+
+<section id="written"><div id="wq"></div></section>
+
+<section id="rev">
+<div class="q"><h3>Night-before cheat sheet</h3>
+<ol>
+<li>Line ⇄ vector <b>w</b> (⟂ line, points to positive side).</li>
+<li>Classify: <code>h(x) = sign(wᵀx)</code>. Acute &gt;0, obtuse &lt;0, 90° = 0.</li>
+<li>Dot product = Σ wᵢxᵢ (scalar).</li>
+<li>Bias: x₀ = 1.</li>
+<li>Missed positive: <mark>w ← w + x</mark>. Missed negative: <mark>w ← w − x</mark>. Same as <code>w ← w + y·x</code>.</li>
+<li>Loop until no mistakes; one fix may break another.</li>
+<li>f = unknown truth, h = hypothesis.</li>
+<li>No line works → add x², x³… (degree = highest exponent), still linear in features.</li>
+<li>Slope = Δy/Δx = ميل = انحدار.</li></ol></div>
+</section>
+</main>
+<script>
+var MC=[
+["Slope of a line equals:",["Δx/Δy","Δy/Δx","y+x","b"],1,"Slope = change in y per change in x."],
+["If the intercept is dropped, two lines with the same slope are:",["Perpendicular","Parallel but different","The same line","Undefined"],2,"Both pass through the origin with the same slope."],
+["The weight vector w is ___ to the decision line.",["Parallel","Perpendicular","Equal","Tangent"],1,"w is always normal to the line."],
+["A point is classified positive when the angle between w and x is:",["Obtuse","Acute","Exactly 180° only","Irrelevant"],1,"Acute means w·x > 0."],
+["The angle between w and x is obtuse. w·x is:",["Positive","Zero","Negative","Undefined"],2,"cos of an obtuse angle is negative."],
+["A point with w·x = 0 is:",["Positive","Negative","On the line, neither class","Misclassified always"],2,"It sits at exactly 90° to w."],
+["A truly positive point is classified negative. Update:",["w − x","w + x","x − w","w × x"],1,"Adding x pulls w toward x."],
+["A truly negative point is classified positive. Update:",["w + x","w − x","w · x","Do nothing"],1,"Subtracting pushes w away so the angle becomes obtuse."],
+["Why does w + x help a missed positive?",["It lengthens the line","It shrinks the angle between w and x","It changes the label","It removes x"],1,"The new w lies between old w and x."],
+["The dot product of two vectors is:",["A vector","A matrix","A scalar","A set of pairs"],2,"Multiply matching entries and sum."],
+["Why write wᵀx?",["To make w longer","Row × column so multiplication is defined","To negate w","Decoration"],1,"Transpose turns a column into a row."],
+["How is the intercept b handled in vector form?",["Ignored forever","Weight on a constant input of 1","Weight on x²","Added to the label"],1,"x₀ = 1, w₀ = b."],
+["The target function f is:",["Our chosen line","Known exactly","Unknown true rule","The error"],2,"We only approximate it with a hypothesis."],
+["The hypothesis h is:",["The true rule","Our guessed model tuned with data","The dataset","The bias"],1,"h = candidate function (a line given by w)."],
+["PLA stops when:",["After 1 update","No misclassified points remain","w = 0","x = 0"],1,"Converges only if the data is linearly separable."],
+["After fixing one point, other points:",["Never change","May become misclassified","Are deleted","Become positive"],1,"The line moves, so re-check everything."],
+["Classes cannot be separated by any line. A lecture-suggested fix:",["Give up","Add polynomial terms like x²","Delete points","Reduce w"],1,"Features like x² allow a curved boundary."],
+["Polynomial degree of 4x³ + x² + 2 is:",["2","3","4","1"],1,"Highest exponent = 3."],
+["Cartesian product vs dot product:",["Same thing","Cartesian pairs all, dot multiplies matching and sums","Dot gives pairs","Cartesian gives a scalar"],1,"Different operations."],
+["Update rule for any label y ∈ {+1, −1}:",["w ← w − y·x","w ← w + y·x","w ← y/x","w ← x"],1,"y = +1 adds, y = −1 subtracts."]];
+var WR=[
+["Explain how a line is represented by a vector and how it classifies a point.","A line through the origin is represented by its weight vector w, which is perpendicular to the line and points to the positive side. For a point x, compute the dot product wᵀx = Σ wᵢxᵢ. If the angle between w and x is acute, wᵀx &gt; 0 and the point is positive; if obtuse, wᵀx &lt; 0 and it is negative; if 90°, it lies on the line. The prediction is sign(wᵀx)."],
+["State and justify the perceptron update rule.","For a misclassified x with label y ∈ {+1,−1}: w_new = w + y·x. A missed positive has an obtuse angle with w; adding x produces a vector between w and x, shrinking the angle toward acute so the point moves to the positive side. A missed negative has an acute angle; subtracting x pushes w away, making the angle obtuse. Repeat over the data until no point is misclassified, because fixing one point can break others."],
+["Distinguish the target function from the hypothesis.","The target function f is the true, unknown relation that generated the labels; if it were known no learning would be needed. A hypothesis h is a candidate we choose (here a line defined by w). Learning uses data to adjust h so that it approximates f."],
+["What is the dot product and why transpose?","The dot product multiplies corresponding components of two vectors and sums them, giving one scalar. Written as matrices this requires a row times a column, hence wᵀx. It differs from the Cartesian product, which pairs all elements."],
+["Data cannot be separated by a straight line. What can be done?","Add non-linear features such as x² so the boundary becomes a curve, e.g. ax² + bx + c = 0. The polynomial degree is the largest exponent; higher degree gives more flexibility. The model remains linear in its (transformed) features, so the same weight-update idea applies."]];
+var NV=[["explain","Explanation"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+var nav=document.getElementById("nav");
+function show(id){NV.forEach(function(n){document.getElementById(n[0]).classList.toggle("on",n[0]==id);});[].forEach.call(nav.children,function(b){b.classList.toggle("on",b.dataset.id==id);});window.scrollTo(0,0);}
+NV.forEach(function(n){var b=document.createElement("button");b.textContent=n[1];b.dataset.id=n[0];b.onclick=function(){show(n[0]);};nav.appendChild(b);});
+var right=0,done=0,sc=document.getElementById("score");
+MC.forEach(function(m,i){var d=document.createElement("div");d.className="q";d.innerHTML="<b>"+(i+1)+". "+m[0]+"</b>";var ex=document.createElement("div");ex.className="ex";ex.innerHTML="Answer: "+m[1][m[2]]+". "+m[3];var bs=[];
+m[1].forEach(function(o,j){var b=document.createElement("button");b.textContent=o;bs.push(b);b.onclick=function(){if(d.dataset.d)return;d.dataset.d=1;done++;if(j==m[2])right++;b.classList.add(j==m[2]?"ok":"no");bs[m[2]].classList.add("ok");ex.classList.add("s");sc.textContent="Score: "+right+" / "+done;};d.appendChild(b);});
+d.appendChild(ex);document.getElementById("mq").appendChild(d);});
+WR.forEach(function(w,i){var e=document.createElement("details");e.innerHTML="<summary>Q"+(i+1)+". "+w[0]+"</summary><p>"+w[1]+"</p>";document.getElementById("wq").appendChild(e);});
+var r=document.documentElement;document.getElementById("th").onclick=function(){var dark=r.dataset.theme?r.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=dark?"light":"dark";};
+show("explain");
+</script></body></html>

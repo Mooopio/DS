@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Science – Exam Prep</title>
+<style>
+:root{--bg:#fbfaf8;--fg:#1d1f23;--mute:#6b6f76;--line:#e4e2dd;--acc:#2f4f7f;--hl:#e8eef7;--ok:#2d6a4f;--no:#a4343a;--okbg:#e6f2ec;--nobg:#f8e7e8}
+:root[data-t=dark]{--bg:#14161a;--fg:#e6e6e3;--mute:#9a9ea6;--line:#2a2d33;--acc:#8fb0e0;--hl:#1e2733;--ok:#7fcfa4;--no:#e88a90;--okbg:#17281f;--nobg:#2c1c1e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.65 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{max-width:44rem;margin:0 auto;padding:3rem 1.25rem 1rem}
+h1{font:600 2.1rem/1.2 Georgia,"Times New Roman",serif;margin:0 0 .4rem;letter-spacing:-.01em}
+.sub{color:var(--mute);margin:0}
+nav{max-width:44rem;margin:1rem auto 0;padding:0 1.25rem;display:flex;gap:.25rem;flex-wrap:wrap;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+nav button,#th{font:inherit;font-size:.95rem;background:none;border:0;color:var(--mute);padding:.7rem .8rem;cursor:pointer;border-bottom:2px solid transparent}
+nav button:hover,#th:hover{color:var(--fg)}
+nav button.on{color:var(--fg);border-color:var(--acc)}
+#th{margin-left:auto}
+button:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+main{max-width:44rem;margin:0 auto;padding:1.5rem 1.25rem 5rem}
+section{display:none}
+section.on{display:block;animation:f .25s}
+@keyframes f{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+h2{font:600 1.5rem/1.3 Georgia,serif;margin:2.2rem 0 .6rem}
+h3{font-size:1.05rem;margin:1.4rem 0 .3rem}
+p,li{max-width:40rem}
+mark{background:var(--hl);color:inherit;padding:.05em .25em;border-radius:3px}
+.box{border-left:3px solid var(--acc);background:var(--hl);padding:.7rem 1rem;margin:1rem 0;border-radius:0 6px 6px 0}
+.warn{border-color:var(--no);background:var(--nobg)}
+code,.eq{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em}
+.eq{display:block;background:var(--hl);padding:.5rem .8rem;margin:.6rem 0;border-radius:6px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.95rem;display:block;overflow-x:auto}
+th,td{border-bottom:1px solid var(--line);padding:.5rem .7rem;text-align:left;vertical-align:top}
+th{font-weight:600}
+details{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;padding:.85rem 0;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";display:inline-block;width:1.3rem;color:var(--mute)}
+details[open]>summary::before{content:"–"}
+details>div{padding:0 0 1rem 1.3rem}
+.q{padding:1.2rem 0;border-bottom:1px solid var(--line)}
+.q p{margin:0 0 .6rem;font-weight:600}
+.o{display:block;width:100%;text-align:left;font:inherit;font-size:.97rem;background:none;color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:.5rem .8rem;margin:.3rem 0;cursor:pointer;transition:background .15s}
+.o:hover:not(:disabled){background:var(--hl)}
+.o:disabled{cursor:default}
+.o.ok{background:var(--okbg);border-color:var(--ok)}
+.o.no{background:var(--nobg);border-color:var(--no)}
+.ex{display:none;margin-top:.6rem;color:var(--mute);font-size:.95rem}
+.q.done .ex{display:block}
+.lv{font-weight:400;color:var(--mute);font-size:.85rem;margin-left:.4rem}
+#score{position:sticky;top:3.1rem;background:var(--bg);padding:.5rem 0;color:var(--mute);font-size:.95rem;border-bottom:1px solid var(--line)}
+.tools button{font:inherit;font-size:.9rem;border:1px solid var(--line);background:none;color:var(--fg);padding:.35rem .8rem;border-radius:6px;cursor:pointer;margin-right:.4rem}
+.sheet{border:1px solid var(--line);border-radius:8px;padding:1rem 1.3rem;margin:1rem 0}
+@media print{nav,#th,.tools{display:none}section{display:block!important}}
+</style>
+</head>
+<body>
+<header>
+<h1>Data Science: learning from data</h1>
+<p class="sub">Exam prep built from Lectures 1–5, including the handwritten notes on perceptrons and Hoeffding.</p>
+</header>
+<nav id="nav"></nav>
+<main>
+
+<section id="explain">
+<h2>1. What is learning from data?</h2>
+<p><mark>Raw data</mark> plus <mark>metadata</mark> (data that describes the data, e.g. column names) gives <mark>information</mark>. A table of numbers means nothing until each column has a name.</p>
+<p><mark>Knowledge</mark> is a specific <mark>pattern</mark> that is <em>not written explicitly</em> in the data. The information is not handed to you: you go looking for it. A model <mark>learns</mark> by reading many events and extracting the pattern behind them.</p>
+<div class="box"><b>Analogy.</b> A table of daily temperatures is information. “It gets hotter every June” is knowledge: nobody wrote it in a cell, you found it.</div>
+<h3>Why mathematics?</h3>
+<p>To say what a pattern is, we need a <mark>generic formulation</mark>: a mathematical formula is the best way to represent an abstraction. Geometry example: plot points, then search for the equation of the circle to learn what controls the shape. When a problem gets complex, mathematical rules let us extract the knowledge.</p>
+<div class="box warn">The first page of notes ends with a note that mathematics does not answer everything. The handwriting is hard to read, so check this line against your lecture.</div>
+
+<h2>2. Equations as hypotheses</h2>
+<p>The <mark>slope</mark> (how many bends the data has) decides the <mark>polynomial degree</mark>. The <mark>learning process</mark> means tuning the slope and the coefficients.</p>
+<span class="eq">y = a₁x⁴ + a₂x³ + a₃x² + a₄x + b</span>
+<p>Example: salary (y) vs years of experience (x) can wiggle, so it needs a higher degree. A <mark>logistic equation</mark> gives a bounded S-shaped curve instead. A word problem becomes useful once you turn it into an equation: that is how you obtain knowledge that was not there before.</p>
+<p>Also noted: an empty result set means the record is <code>null</code>.</p>
+
+<h2>3. Three problem types</h2>
+<table>
+<tr><th></th><th>Regression</th><th>Classification</th><th>Clustering</th></tr>
+<tr><td>Answer is</td><td>numeric, continuous</td><td>discrete, known classes</td><td>unknown groups</td></tr>
+<tr><td>Know the classes?</td><td>n/a</td><td>yes, with clear distinctions</td><td>no, only that differences exist</td></tr>
+<tr><td>Example</td><td>salary from years of experience (sine wave, logistic)</td><td>choose between known categories</td><td>salary vs experience scatter: find the groups</td></tr>
+</table>
+
+<h2>4. Separating classes with a line</h2>
+<p>The decision is made mathematically. Points on the line evaluate to <b>zero</b>. The rule is a straight line with a specific slope, and the attributes of the data tell us where it goes. Each side is a <mark>signature</mark> of a class: + for one, − for the other. They are only labels. + does not mean “good” and − does not mean “bad”.</p>
+<h3>Vectors and lines</h3>
+<p>A vector has a direction. Any point defines a line through the +ve direction, and the <mark>vector is the slope of the line</mark>.</p>
+<span class="eq">y = mx + c,  m = Δy/Δx = (y₂ − y₁)/(x₂ − x₁)</span>
+<p>Two lines with the same slope are parallel, and they are the same line only if the intercept is also equal. Each line has one vector (v₁, v₂, v₃…). The +ve direction decides whether a point is above or below the line.</p>
+<span class="eq">x · w &gt; 0 → +ve side  |  x · w &lt; 0 → −ve side</span>
+<p>The weights are the coefficients, and they represent the slope. A <mark>dot product</mark> (x · w) is the weight times the vector.</p>
+
+<h2>5. Fixing mistakes: the perceptron update</h2>
+<p>A <mark>hypothesis</mark> is a candidate line. We need a mechanism to change it so it becomes better. The rule: take <mark>one misclassified point at a time</mark> and move the line to fix it.</p>
+<table>
+<tr><th>Case</th><th>Angle with w</th><th>Update</th></tr>
+<tr><td>True + but predicted −</td><td>obtuse</td><td><code>w_new = w + x</code> (angle shrinks)</td></tr>
+<tr><td>True − but predicted +</td><td>acute</td><td><code>w_new = w − x</code></td></tr>
+</table>
+<p>Combined: <span class="eq">w ← w + yₙ·xₙ</span> Adding two vectors gives a vector in the middle. Subtracting pushes it the other way. That is how we decide to move closer or farther. When you use the transpose (wᵀx), the sign you multiply by must be tracked carefully, which is what yₙ does.</p>
+<p>To get more curves, raise the degree: x² gives one bend, x³ gives an S-shape.</p>
+
+<h2>6. Can we trust a learned hypothesis? (Lecture 5)</h2>
+<p>We want to <mark>lower the probability of a bad event</mark>: a wrong prediction on data we have never seen. The sample is a slice of the total <mark>population</mark>. The larger the sample N, the closer it is to the population, so the bad event becomes less likely.</p>
+<span class="eq">P( |ν − μ| &gt; ε ) ≤ 2·e^(−2ε²N)</span>
+<ul>
+<li><b>ν</b> = what we measure on the sample, <b>μ</b> = the true value on the population.</li>
+<li><b>ε</b> = tolerance, a decimal value you choose. The bound is the probability of the bad event at that tolerance.</li>
+<li>The notes’ example: pick 1000 points out of 2000. The difference between g and the target f is what we try to shrink.</li>
+</ul>
+<div class="box">With M candidate hypotheses the bound becomes 2M·e^(−2ε²N). This is from the standard theory, not your notes.</div>
+<p>Learning is <mark>approximation</mark>, never exact. We cannot know the whole population, so we can never be 100% sure. The best we get is <mark>probably approximately correct</mark>.</p>
+<p><b>Trade-off.</b> Learn the pattern without memorising the dataset. If the model only memorises, it fails on something different (overfitting). We want g to get as close to f as possible, and each hypothesis is judged by the errors it makes.</p>
+
+<h2>7. Vocabulary (Lecture 4 page)</h2>
+<table>
+<tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>Feasibility</td><td>can actually be done</td></tr>
+<tr><td>Probability</td><td>a chance that can be acted on</td></tr>
+<tr><td>Possibility</td><td>can happen, but very hard</td></tr>
+</table>
+<p>Training examples lead to a hypothesis set. <mark>Euler’s number</mark> is the exponential function: (1 + 1/n)ⁿ → e as n → ∞.</p>
+
+<h2>Memory aids</h2>
+<ul>
+<li><b>Plus → add, minus → subtract</b> (for the update: the sign of the true label decides).</li>
+<li><b>R-C-C:</b> Regression = Number, Classification = Category, Clustering = Crowd (unknown groups).</li>
+<li><b>Bigger N, smaller worry.</b> The bound has N in the exponent, so it shrinks fast.</li>
+<li>Review at 1 day, 3 days and 1 week. Test yourself on the MCQs before rereading.</li>
+</ul>
+<h3>Common traps</h3>
+<ul>
+<li>Information is not knowledge: knowledge is the hidden pattern.</li>
+<li>Same slope means parallel, not automatically identical.</li>
+<li>Larger N reduces the chance of a bad event, but it never makes it zero.</li>
+<li>+ and − are class labels, not value judgments.</li>
+<li>The update applies to one point at a time.</li>
+</ul>
+</section>
+
+<section id="summary">
+<h2>Summary</h2>
+<details open><summary>Data → knowledge</summary><div><ul><li><b>Raw data + metadata = information</b></li><li><b>Knowledge</b> = pattern not written explicitly; found by learning from many events</li><li>Pattern is expressed as a <b>mathematical formulation</b> (abstraction)</li></ul></div></details>
+<details open><summary>Problem types</summary><div><ul><li><b>Regression</b>: continuous number</li><li><b>Classification</b>: discrete, known classes</li><li><b>Clustering</b>: find groups, classes unknown</li></ul></div></details>
+<details open><summary>Equations</summary><div><ul><li>Degree grows with the number of bends</li><li>Learning = tuning <b>coefficients (weights)</b></li><li><b>Logistic</b> = bounded S-curve</li></ul></div></details>
+<details open><summary>Perceptron</summary><div><ul><li>Line ↔ vector <b>w</b>; sign of <b>x·w</b> picks the side</li><li>Misclassified + → <b>w + x</b>; misclassified − → <b>w − x</b>; i.e. <b>w + yx</b></li><li>One point at a time</li></ul></div></details>
+<details open><summary>Generalisation</summary><div><ul><li><b>P(|ν−μ|&gt;ε) ≤ 2e^(−2ε²N)</b></li><li>Larger <b>N</b> → lower risk; never 100%</li><li>Learning = approximation; <b>avoid memorising</b></li><li>g ≈ f</li></ul></div></details>
+<details open><summary>Vocabulary</summary><div><ul><li>Feasibility &gt; Probability &gt; Possibility in practical usefulness (possibility = maybe, but very hard)</li><li>e = lim (1+1/n)ⁿ</li></ul></div></details>
+</section>
+
+<section id="mcq">
+<h2>Multiple choice</h2>
+<div id="score"></div>
+<div id="qs"></div>
+</section>
+
+<section id="written">
+<h2>Written questions</h2>
+<p class="tools"><button onclick="document.querySelectorAll('#wq details').forEach(d=>d.open=true)">Open all</button><button onclick="document.querySelectorAll('#wq details').forEach(d=>d.open=false)">Close all</button></p>
+<div id="wq"></div>
+</section>
+
+<section id="rev">
+<h2>Night-before sheet</h2>
+<div class="sheet">
+<b>Definitions</b>
+<ul><li>Information = raw data + metadata</li><li>Knowledge = hidden pattern, not explicit</li><li>Hypothesis = candidate line/equation; g = chosen one; f = target</li><li>Regression / Classification / Clustering = number / known category / unknown groups</li></ul>
+<b>Formulas</b>
+<span class="eq">y = mx + c ; m = (y₂−y₁)/(x₂−x₁)</span>
+<span class="eq">y = a₁x⁴ + a₂x³ + a₃x² + a₄x + b</span>
+<span class="eq">x·w &gt; 0 (+) ; x·w &lt; 0 (−)</span>
+<span class="eq">misclassified +: w+x ; misclassified −: w−x ; w ← w + yₙxₙ</span>
+<span class="eq">P(|ν−μ|&gt;ε) ≤ 2e^(−2ε²N) ; e = lim (1+1/n)ⁿ</span>
+<b>Rules</b>
+<ul><li>More bends → higher degree</li><li>Bigger N → smaller bad-event probability, never zero</li><li>Fix one misclassified point at a time</li><li>Generalise, don’t memorise</li></ul>
+<b>Traps</b>
+<ul><li>Same slope ≠ same line</li><li>+/− are labels only</li><li>Information ≠ knowledge</li></ul>
+</div>
+<p class="tools"><button onclick="window.print()">Print this sheet</button></p>
+</section>
+</main>
+
+<script>
+const S=[["explain","Explanation"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+const nav=document.getElementById("nav");
+S.forEach(([id,l],i)=>{const b=document.createElement("button");b.textContent=l;b.dataset.id=id;b.onclick=()=>show(id);nav.appendChild(b)});
+const th=document.createElement("button");th.id="th";th.textContent="Dark";nav.appendChild(th);
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id===id));nav.querySelectorAll("button[data-id]").forEach(b=>b.classList.toggle("on",b.dataset.id===id));window.scrollTo(0,0);location.hash=id}
+th.onclick=()=>{const d=document.documentElement;const dark=d.dataset.t==="dark";d.dataset.t=dark?"light":"dark";th.textContent=dark?"Dark":"Light"};
+if(matchMedia("(prefers-color-scheme:dark)").matches){document.documentElement.dataset.t="dark";th.textContent="Light"}
+
+const M=[
+["E","Raw data combined with metadata gives:",["Knowledge","Information","A hypothesis","A cluster"],1,"Metadata (e.g. column names) describes raw data; together they are information."],
+["E","Knowledge is best described as:",["Any stored table","A pattern not written explicitly in the data","The column names","The sample size"],1,"Knowledge is found by searching for patterns; it is not directly in the data."],
+["E","Predicting salary (a continuous number) from years of experience is:",["Classification","Clustering","Regression","Encoding"],2,"A numeric, continuous answer means regression."],
+["E","Deciding between known, clearly distinct categories is:",["Classification","Regression","Clustering","Normalisation"],0,"Discrete answers with known classes = classification."],
+["E","You know the data has differences but not the groups. This is:",["Regression","Classification","Clustering","Logistic fitting"],2,"Clustering identifies groups without predefined classes."],
+["M","In the notes, the learning process for a polynomial means:",["Deleting outliers","Tuning slope and coefficients","Increasing N only","Choosing a new dataset"],1,"The coefficients (weights) are what gets adjusted."],
+["M","A curve with three turning points most likely needs degree:",["1","2","3","4"],3,"A degree-n polynomial can have up to n−1 turns, so three turns needs degree 4."],
+["E","The logistic curve is best described as:",["A straight line","A bounded S-shaped curve","A parabola","A circle"],1,"It flattens at both ends."],
+["M","In the notes, the vector associated with a line represents its:",["Intercept only","Slope (direction)","Noise","Sample size"],1,"“The vector is the slope of the line.”"],
+["M","If x·w &gt; 0, the point lies:",["On the +ve side","On the −ve side","Exactly on the line","Outside the dataset"],0,"The sign of the dot product picks the side."],
+["E","A point on the decision line gives x·w equal to:",["1","−1","0","∞"],2,"Points on the line evaluate to zero."],
+["M","A true + point is misclassified. The update is:",["w − x","w + x","w · x","w / x"],1,"Adding x pulls w toward the point, shrinking the angle."],
+["M","A true − point is misclassified. The update is:",["w + x","w − x","Do nothing","2w"],1,"Subtracting x pushes w away from the point."],
+["H","A misclassified + point makes which angle with w?",["Acute","Obtuse","Zero","None"],1,"x·w &lt; 0 means an obtuse angle; adding x makes it more acute."],
+["M","The perceptron update is applied:",["To all points together","One misclassified point at a time","Only to + points","Only once"],1,"Notes: one misclassified point at a time."],
+["H","The unified update rule is:",["w ← w + yₙxₙ","w ← w · xₙ","w ← yₙ","w ← w − yₙ"],0,"yₙ = ±1 flips the sign automatically."],
+["E","Raising the polynomial degree gives:",["Fewer curves","More curves","No change","Only a line"],1,"x² has one bend, x³ an S-shape."],
+["M","Increasing sample size N makes the bad-event probability:",["Larger","Smaller","Zero exactly","Unchanged"],1,"The sample gets closer to the population."],
+["H","The bound in the notes is:",["e^(N)","2e^(−2ε²N)","1/N","N·ε"],1,"Hoeffding’s inequality."],
+["M","In the bound, μ and ν are:",["Population value and sample value","Sample value and population value","Both samples","Both populations"],0,"μ is the population (true) value; ν is the sample measurement."],
+["H","Why can learning never promise 100% correctness?",["Computers are slow","The whole population is unknown","N is always 1","Lines are straight"],1,"We only see a sample, so we get “probably approximately correct”."],
+["H","Memorising the dataset leads to:",["Better generalisation","Failure on different, unseen data","Smaller error on the population","Higher N"],1,"This is overfitting; we want the pattern, not the memory."],
+["M","Possibility vs feasibility in the notes:",["Same thing","Possibility = can happen but very hard; feasibility = can be done","Possibility = certain","Feasibility = impossible"],1,"Possibility is weaker than feasibility."],
+["E","Euler’s number comes from:",["(1 + 1/n)ⁿ as n → ∞","(1 − n)ⁿ","n/(n+1)","1/n²"],0,"It is the exponential limit."],
+["H","Two lines have the same slope. Which statement is safest?",["They are always the same line","They are parallel; same line only if intercepts match","They always intersect","They have no vector"],1,"The notes simplify this; strictly the intercept matters too."],
+["H","In a two-class problem, “+” means:",["Good class","Bad class","Just the signature of one class","A correct prediction"],2,"Labels are signatures, not value judgments."]
+];
+const lv={E:"easy",M:"medium",H:"hard"};
+const qs=document.getElementById("qs"),sc=document.getElementById("score");let right=0,done=0;
+function upd(){sc.textContent=done+" of "+M.length+" answered, "+right+" correct"}upd();
+M.forEach((m,i)=>{const d=document.createElement("div");d.className="q";
+d.innerHTML=`<p>${i+1}. ${m[1]}<span class="lv">${lv[m[0]]}</span></p>`;
+m[2].forEach((t,j)=>{const b=document.createElement("button");b.className="o";b.innerHTML=t;
+b.onclick=()=>{d.querySelectorAll(".o").forEach((x,k)=>{x.disabled=true;if(k===m[3])x.classList.add("ok")});if(j!==m[3])b.classList.add("no");else right++;done++;d.classList.add("done");upd()};d.appendChild(b)});
+const e=document.createElement("div");e.className="ex";e.innerHTML=m[4];d.appendChild(e);qs.appendChild(d)});
+
+const W=[
+["Define information and knowledge, and explain how they differ. (short)","Information is raw data together with metadata that describes it (for example column names). Knowledge is a specific pattern that is not written explicitly in the data and must be discovered by learning from many events. Information tells you what was recorded; knowledge tells you what regularly happens behind it."],
+["Distinguish regression, classification and clustering. (short)","Regression predicts a continuous numeric value (salary from experience). Classification chooses among discrete, known and clearly distinct classes. Clustering groups data points when we know differences exist but not the classes beforehand."],
+["Why do we use mathematics to represent patterns? (short)","A mathematical formulation is a generic, compact way to represent an abstraction. When a problem becomes complex, equations let us derive rules mathematically and so extract knowledge. Example: finding the equation of a circle from sampled points shows what controls its shape."],
+["Explain how a line is represented by a vector and how a point is classified. (long)","Each line has a weight vector w whose entries are the coefficients (the slope). For a point x, compute x·w. If it is positive the point lies on the +ve side, if negative on the −ve side, and if zero it lies on the line. The two sides are signatures of the two classes. They are labels only, not good or bad."],
+["Describe the perceptron update rule and justify it geometrically. (long)","Take one misclassified point at a time. If a true + point has x·w &lt; 0, the angle between w and x is obtuse; set w_new = w + x, which rotates w toward x and shrinks the angle. If a true − point has x·w &gt; 0, the angle is acute; set w_new = w − x. Both cases combine as w ← w + yₙxₙ. Repeat until no point is misclassified."],
+["Explain the role of N in the bound P(|ν−μ|&gt;ε) ≤ 2e^(−2ε²N) and why learning is only approximate. (long)","ν is measured on the sample and μ is the population value. The bound limits the probability that they differ by more than the tolerance ε. N sits in the negative exponent, so a larger sample makes the bad event exponentially less likely. Because the whole population is never known, this probability never reaches zero, so learning is approximation: probably approximately correct. We also must avoid memorising the dataset, so that g generalises and stays close to the target f on unseen data."]
+];
+const wq=document.getElementById("wq");
+W.forEach((w,i)=>{const d=document.createElement("details");d.innerHTML=`<summary>${i+1}. ${w[0]}</summary><div><div class="box">${w[1]}</div></div>`;wq.appendChild(d)});
+
+show((location.hash||"#explain").slice(1)||"explain");
+</script>
+</body>
+</html>

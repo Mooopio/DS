@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hoeffding & Generalization: Exam Prep</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--tx:#1d2330;--mut:#5c6578;--ac:#3b5bdb;--hl:#fff3bf;--ok:#2b8a3e;--no:#c92a2a;--bd:#e3e5ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161c;--card:#1d212b;--tx:#e8eaf0;--mut:#9aa3b5;--ac:#7c9cff;--hl:#4a4320;--ok:#69db7c;--no:#ff8787;--bd:#2d3342;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14161c;--card:#1d212b;--tx:#e8eaf0;--mut:#9aa3b5;--ac:#7c9cff;--hl:#4a4320;--ok:#69db7c;--no:#ff8787;--bd:#2d3342;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--bd);z-index:5;padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header h1{font-size:1rem;margin:0 auto 0 0}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:6px 12px;transition:.2s}
+button:hover{border-color:var(--ac)}button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:820px;margin:0 auto;padding:16px}
+section{display:none;animation:f .3s}section.on{display:block}@keyframes f{from{opacity:0;transform:translateY(6px)}}
+details{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin:10px 0;padding:4px 16px}
+summary{cursor:pointer;font-weight:600;padding:10px 0}
+mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:3px}
+code{background:var(--bd);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left}
+.tbl{overflow-x:auto}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.q button{display:block;width:100%;text-align:left;margin:6px 0}
+.q button.ok{border-color:var(--ok);color:var(--ok)}.q button.no{border-color:var(--no);color:var(--no)}
+.ex{display:none;color:var(--mut);margin-top:8px}.ex.s{display:block}
+.tip{border-left:4px solid var(--ac);padding:6px 12px;background:var(--card);margin:10px 0;border-radius:0 8px 8px 0}
+.trap{border-left-color:var(--no)}
+#score{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);background:var(--card);border:1px solid var(--bd);padding:6px 12px;border-radius:8px;display:inline-block}
+</style></head><body>
+<header><h1>Lecture 3: Hoeffding &amp; Generalization</h1><nav id="nav"></nav><button id="th">Dark/Light</button></header>
+<main>
+
+<section id="explain">
+<div class="tip">Source note: auto-transcript of Egyptian Arabic mixed with English, with gaps. The lecture is the <b>Hoeffding inequality</b> (the lecturer names it near the end). The standard formula is added where the spoken version was garbled, so check it against your slides.</div>
+
+<details open><summary>1. Where we are: the problem</summary>
+<p>We want a final hypothesis <b>g</b> that approximates the unknown target <b>f</b> (picked from a hypothesis set H using <b>training examples</b>). The <b>population</b> can never be fully known (impossible, or too large to count, like a census), so we only have a <b>sample</b>. Learning is therefore <mark>approximate</mark>, never exact.</p>
+<p>Notation: <b>μ</b> = the true fraction in the population (e.g. of red balls, or of mistakes on all data); <b>ν</b> (written as “the Greek letter that looks like v”; the lecturer notes it is the same idea as the sample fraction) = the same fraction measured in the <b>sample</b>. We can compute ν, but never μ.</p></details>
+
+<details><summary>2. The “bad event”</summary>
+<p>A <b>bad event</b> = the sample misleads us: our prediction on a new point is wrong because ν is far from μ. Formally: <code>|ν − μ| &gt; ε</code> (ε = a tolerance threshold we choose). We want the probability of this bad event to be <mark>as small as possible</mark> (we minimize the chance of something bad; we do not maximize it).</p>
+<p><b>Proxy idea:</b> we cannot see the population, so we use more sample data as a stand-in; more data = closer to the population = better hypothesis g.</p></details>
+
+<details><summary>3. Hoeffding inequality (the main result)</summary>
+<p><mark>P( |ν − μ| &gt; ε ) ≤ 2 e<sup>−2ε²N</sup></mark></p>
+<ul><li><b>N</b> = number of examples in the sample. Bigger N → exponent more negative → bound shrinks <b>exponentially</b> (this is why Euler’s e appeared in the last lecture).</li>
+<li><b>ε</b> = tolerance. Smaller ε (stricter) → weaker bound; larger ε → stronger bound.</li>
+<li>The bound does <b>not depend on μ</b> (the unknown population value) and holds for any distribution.</li>
+<li>The factor <b>2</b> (two-sided: ν could be above or below μ). The right side may even exceed 1 for small N, which is still true, just useless.</li>
+<li>It is an inequality (≤), not equality, so it gives an <b>approximation</b> only.</li></ul>
+<p><b>PAC idea (Probably Approximately Correct):</b> <b>Probably</b> = the bad event is now a measurable probability (not just “possible”); <b>Approximately</b> = we only say the difference is below ε, never exactly equal. So Hoeffding makes learning <i>probable</i> and <i>approximate</i>, and it relies on statistics because we sample.</p>
+<p>Warning: you can’t shortcut by making N huge forever, since you can’t observe the whole population in practice, and memorizing is a risk (section 5).</p></details>
+
+<details><summary>4. Measuring hypothesis quality: errors</summary>
+<ul><li><b>Classification:</b> error = number/fraction of misclassified points.</li>
+<li><b>Regression:</b> error = vertical (y) differences between line and points, summed.</li>
+<li><b>In-sample error E<sub>in</sub></b> (on training data, plays the role of ν) vs <b>out-of-sample error E<sub>out</sub></b> (on all data, plays the role of μ). Hoeffding says <code>E_in ≈ E_out</code> with high probability.</li>
+<li>Two hypotheses can look very different yet be equal for us if they make the same errors. We prefer the hypothesis with the <b>smaller error</b>.</li></ul></div></details>
+
+<details><summary>5. Overfitting and testing</summary>
+<ul><li>More data reduces the gap, but you must not simply <b>memorize patterns</b>: if an unseen point arrives, a memorizer answers wrong (analogy: reading two or three books and believing you know everything; or memorizing the slides without understanding).</li>
+<li><b>Testing:</b> testing on the training data tests only memory (“1+1=2, then asked 1+1”). So <b>hide some data</b> and test on it. Example: 1000 points, train on 700, test on the rest; repeat with different random subsets (not always the same ones).</li>
+<li>Learning has two sides: collecting more points reduces misclassification risk, but you must also actually understand the topic so the model generalizes.</li></ul></details>
+
+<details><summary>6. Many hypotheses: the factor M</summary>
+<p>Hoeffding applies to <b>one fixed hypothesis</b> (verification). In learning we try <b>M hypotheses</b> (lines h₁…h<sub>M</sub>) and pick g, so the bad event can occur for <i>any</i> of them. Summing over hypotheses (union): <mark>P(bad) ≤ 2M e<sup>−2ε²N</sup></mark>.</p>
+<p>Two knobs: <b>N</b> (data points) and <b>M</b> (number of hypotheses). Both matter and they complement each other: you need enough data relative to the number of hypotheses.</p>
+<p>Also: we never know the true f, so the guarantees are <b>approximate</b>, which is why different observers might phrase the same question differently but the math is the same.</p></details>
+
+<details><summary>7. Study tip from the lecture (spaced repetition)</summary>
+<p>Review the same day, again after ~2 days, then after ~a week; the chance of forgetting drops to about 15%. Rewrite and explain it to yourself or friends. Understand first, then build on it; do not memorize formulas 300 times.</p></details>
+</section>
+
+<section id="summary">
+<div class="q"><ul>
+<li>Population unknown → use a <b>sample</b>. μ = population value; ν = sample value.</li>
+<li><b>Bad event</b>: |ν − μ| &gt; ε. Minimize its probability.</li>
+<li><b>Hoeffding:</b> P(|ν−μ| &gt; ε) ≤ <mark>2e<sup>−2ε²N</sup></mark>.</li>
+<li>Larger <b>N</b> → exponentially smaller bound. Independent of μ. Inequality = approximate.</li>
+<li><b>PAC</b>: Probably Approximately Correct.</li>
+<li><b>E_in ≈ E_out</b>; pick the hypothesis with small error.</li>
+<li><b>Overfit/memorize</b> = bad on unseen data → test on <b>held-out</b> data.</li>
+<li>With <b>M</b> hypotheses: bound is <b>2M e<sup>−2ε²N</sup></b>.</li>
+<li>Study: same day → 2 days → 1 week.</li></ul></div>
+<h3>Memory triggers</h3>
+<div class="tip"><b>“N up, risk down.”</b> N sits in the exponent with a minus sign.</div>
+<div class="tip"><b>“M multiplies the worry”</b>: more hypotheses, more chances for a fluke.</div>
+<div class="tip"><b>“PAC”</b> = Probably + Approximately Correct.</div>
+<h3>Common mistakes &amp; traps</h3>
+<div class="tip trap">Thinking Hoeffding gives an exact probability: it is an <b>upper bound</b>.</div>
+<div class="tip trap">Thinking the bound depends on μ; it does not.</div>
+<div class="tip trap">Mixing ν (sample) and μ (population), or E_in with E_out.</div>
+<div class="tip trap">Testing on training data (that only tests memory).</div>
+<div class="tip trap">Believing “just keep increasing N” solves everything: memorizing patterns still fails on unseen data.</div>
+<div class="tip trap">Forgetting the factor M when choosing among many hypotheses.</div>
+<h3>Compare</h3>
+<div class="tbl"><table><tr><th></th><th>μ / E_out</th><th>ν / E_in</th></tr><tr><td>Measured on</td><td>Whole population</td><td>Sample / training data</td></tr><tr><td>Known?</td><td>No</td><td>Yes</td></tr></table></div>
+<div class="tbl"><table><tr><th></th><th>One hypothesis</th><th>M hypotheses</th></tr><tr><td>Bound</td><td>2e<sup>−2ε²N</sup></td><td>2M e<sup>−2ε²N</sup></td></tr><tr><td>Meaning</td><td>Verification</td><td>Learning (choose g)</td></tr></table></div>
+</section>
+
+<section id="mcq"><p>Click an answer. <span id="score">Score: 0 / 0</span></p><div id="mq"></div></section>
+<section id="written"><div id="wq"></div></section>
+
+<section id="rev"><div class="q"><h3>Night-before cheat sheet</h3><ol>
+<li>μ population (unknown), ν sample (known).</li>
+<li>Bad event: |ν − μ| &gt; ε. Make P(bad) small.</li>
+<li><b>Hoeffding: P ≤ 2e^(−2ε²N)</b>. N↑ → bound↓ exponentially; independent of μ; inequality.</li>
+<li>PAC: probably approximately correct.</li>
+<li>E_in (training) ≈ E_out (all data). Classification error = misclassified; regression error = y-distance.</li>
+<li>Many hypotheses: <b>2M e^(−2ε²N)</b>.</li>
+<li>Don’t memorize; hold out test data; repeat with different random splits.</li>
+<li>Study: same day, +2 days, +1 week.</li></ol></div></section>
+</main>
+<script>
+var MC=[
+["μ in this lecture denotes:",["Sample fraction","Population value","Error bound","Learning rate"],1,"μ is the true population value; ν is the sample estimate."],
+["ν denotes:",["Population value","Sample value","Number of hypotheses","Tolerance"],1,"ν is measured on the sample."],
+["The “bad event” is:",["|ν − μ| ≤ ε","|ν − μ| > ε","ν = 0","N = 1"],1,"The sample misleads us by more than ε."],
+["We want the probability of the bad event to be:",["As large as possible","As small as possible","Exactly 0.5","Irrelevant"],1,"Minimize it."],
+["Hoeffding’s bound is:",["2e^(2ε²N)","2e^(−2ε²N)","e^(−N)","2N e^ε"],1,"The exponent is negative."],
+["Increasing N makes the bound:",["Larger","Unchanged","Exponentially smaller","Zero always"],2,"N appears in a negative exponent."],
+["Does Hoeffding’s bound depend on the unknown μ?",["Yes","No","Only if N is small","Only for classification"],1,"It holds regardless of μ."],
+["Hoeffding is:",["An equality","An inequality (upper bound)","A definition","A dataset"],1,"≤, so results are approximate."],
+["PAC stands for:",["Possibly Always Correct","Probably Approximately Correct","Partially Accurate Classifier","Predict And Check"],1,"Probable and approximate."],
+["Making ε smaller (stricter) generally:",["Strengthens the bound","Weakens the bound","Has no effect","Sets N to 0"],1,"e^(−2ε²N) gets closer to 1."],
+["The factor 2 in the bound accounts for:",["Two classes","Both directions (ν above or below μ)","Two hypotheses","Two datasets"],1,"Two-sided deviation."],
+["E_in is the error on:",["All data","Training (in-sample) data","Test data only","Nothing"],1,"E_in plays the role of ν."],
+["For regression, error is measured as:",["Number of misclassified","Distance in y between line and points","Number of lines","Sample size"],1,"Vertical differences."],
+["Why not test only on training data?",["It’s too slow","It only tests memory","It’s illegal","It increases ε"],1,"Hold out unseen data."],
+["Training on 700 of 1000 points and testing on the rest, repeated with different splits, helps because:",["Same points each time","It checks performance on unseen data","It removes N","It sets E_in = 0"],1,"Random held-out sets estimate generalization."],
+["Memorizing patterns causes:",["Better generalization","Wrong answers on unseen points","Smaller M","Perfect f"],1,"Overfitting."],
+["With M hypotheses the bound becomes:",["2e^(−2ε²N)","2M e^(−2ε²N)","e^(−2ε²NM)","2e^(−2ε²N)/M"],1,"Union over M chances for a bad event."],
+["Which two quantities shape learning here?",["N and M","μ and ν only","ε and f","x and y"],0,"Data points and hypotheses."],
+["Two lines with identical error counts are, for this analysis:",["Necessarily the same line","Equivalent in quality","Both wrong","Not comparable"],1,"Quality is measured by errors."],
+["Spaced repetition suggested in the lecture:",["Once only","Same day, ~2 days later, ~1 week later","Every minute","Only before the exam"],1,"Forgetting drops to about 15%."]];
+var WR=[
+["State the Hoeffding inequality and explain each term.","P(|ν − μ| &gt; ε) ≤ 2e^(−2ε²N). μ is the unknown population value and ν the sample value; ε is the tolerance defining a bad event; N is the sample size. The probability that the sample misleads us by more than ε is bounded by a quantity that shrinks exponentially as N grows. The factor 2 covers deviation in both directions. It is an upper bound (inequality), so learning is approximate."],
+["What does PAC mean and how does Hoeffding relate to it?","Probably Approximately Correct. “Probably”: the bad event becomes a measurable probability instead of merely possible. “Approximately”: we only guarantee the difference is below ε, never equality. Hoeffding gives exactly this kind of guarantee, independent of the unknown population value."],
+["Explain why we need held-out test data and the risk of memorizing.","Testing on training data checks only memory (like asking 1 + 1 after teaching 1 + 1 = 2). A model that memorizes patterns fails on unseen points, like a student who read two books and thinks they know everything. We hide part of the data (e.g. train on 700 of 1000), test on it, and repeat with different random subsets to estimate real performance."],
+["How does having many hypotheses change the bound?","Hoeffding verifies one fixed hypothesis. In learning we choose g among M hypotheses, so the bad event can occur for any of them. The union gives P(bad) ≤ 2M e^(−2ε²N). Therefore both the number of examples N and the number of hypotheses M matter, and N must be large enough to offset M."],
+["Define in-sample and out-of-sample error and the error measure for classification and regression.","E_in is error on the training sample (analogous to ν); E_out is error on all data (analogous to μ). For classification, error counts misclassified points; for regression it sums the y-distance between the line and the points. Hoeffding says E_in is close to E_out with high probability, so we choose the hypothesis with small E_in."]];
+var NV=[["explain","Explanation"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+var nav=document.getElementById("nav");
+function show(id){NV.forEach(function(n){document.getElementById(n[0]).classList.toggle("on",n[0]==id);});[].forEach.call(nav.children,function(b){b.classList.toggle("on",b.dataset.id==id);});window.scrollTo(0,0);}
+NV.forEach(function(n){var b=document.createElement("button");b.textContent=n[1];b.dataset.id=n[0];b.onclick=function(){show(n[0]);};nav.appendChild(b);});
+var right=0,done=0,sc=document.getElementById("score");
+MC.forEach(function(m,i){var d=document.createElement("div");d.className="q";var t=document.createElement("b");t.textContent=(i+1)+". "+m[0];d.appendChild(t);var ex=document.createElement("div");ex.className="ex";ex.textContent="Answer: "+m[1][m[2]]+". "+m[3];var bs=[];
+m[1].forEach(function(o,j){var b=document.createElement("button");b.textContent=o;bs.push(b);b.onclick=function(){if(d.dataset.d)return;d.dataset.d=1;done++;if(j==m[2])right++;b.classList.add(j==m[2]?"ok":"no");bs[m[2]].classList.add("ok");ex.classList.add("s");sc.textContent="Score: "+right+" / "+done;};d.appendChild(b);});
+d.appendChild(ex);document.getElementById("mq").appendChild(d);});
+WR.forEach(function(w,i){var e=document.createElement("details");e.innerHTML="<summary>Q"+(i+1)+". "+w[0]+"</summary><p>"+w[1]+"</p>";document.getElementById("wq").appendChild(e);});
+var r=document.documentElement;document.getElementById("th").onclick=function(){var dark=r.dataset.theme?r.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=dark?"light":"dark";};
+show("explain");
+</script></body></html>

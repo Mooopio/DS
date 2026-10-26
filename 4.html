@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning Setup, Probability & e: Exam Prep</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--tx:#1d2330;--mut:#5c6578;--ac:#3b5bdb;--hl:#fff3bf;--ok:#2b8a3e;--no:#c92a2a;--bd:#e3e5ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161c;--card:#1d212b;--tx:#e8eaf0;--mut:#9aa3b5;--ac:#7c9cff;--hl:#4a4320;--ok:#69db7c;--no:#ff8787;--bd:#2d3342;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14161c;--card:#1d212b;--tx:#e8eaf0;--mut:#9aa3b5;--ac:#7c9cff;--hl:#4a4320;--ok:#69db7c;--no:#ff8787;--bd:#2d3342;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--bd);z-index:5;padding:10px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+header h1{font-size:1rem;margin:0 auto 0 0}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:6px 12px;transition:.2s}
+button:hover{border-color:var(--ac)}button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:820px;margin:0 auto;padding:16px}
+section{display:none;animation:f .3s}section.on{display:block}@keyframes f{from{opacity:0;transform:translateY(6px)}}
+details{background:var(--card);border:1px solid var(--bd);border-radius:10px;margin:10px 0;padding:4px 16px}
+summary{cursor:pointer;font-weight:600;padding:10px 0}
+mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:3px}
+code{background:var(--bd);padding:1px 5px;border-radius:4px}
+table{border-collapse:collapse;width:100%;margin:8px 0}th,td{border:1px solid var(--bd);padding:6px 8px;text-align:left}
+.tbl{overflow-x:auto}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 16px;margin:12px 0}
+.q button{display:block;width:100%;text-align:left;margin:6px 0}
+.q button.ok{border-color:var(--ok);color:var(--ok)}.q button.no{border-color:var(--no);color:var(--no)}
+.ex{display:none;color:var(--mut);margin-top:8px}.ex.s{display:block}
+.tip{border-left:4px solid var(--ac);padding:6px 12px;background:var(--card);margin:10px 0;border-radius:0 8px 8px 0}
+.trap{border-left-color:var(--no)}
+#score{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);background:var(--card);border:1px solid var(--bd);padding:6px 12px;border-radius:8px;display:inline-block}
+</style></head><body>
+<header><h1>Lecture 2: Learning Setup, Probability &amp; e</h1><nav id="nav"></nav><button id="th">Dark/Light</button></header>
+<main>
+
+<section id="explain">
+<div class="tip">Source note: this is an auto-transcript of Egyptian Arabic mixed with English; some passages were garbled, so the reconstruction below follows the clear parts. Where the lecturer’s spoken numbers were unclear (the “≈63%” result), I recomputed them.</div>
+
+<details open><summary>1. Study advice and recap</summary>
+<p>Each lecture builds on the previous one (“incremental”), so <mark>review old material before new</mark>. Slides alone do not capture the lecture, so use lecture + slides + the sources. Prerequisites: high-school math, statistics, algebra.</p>
+<p>Recap: the <b>dot product</b> (multiply matching entries, then add) gives a value whose <b>sign</b> gives the class. Adding features raises dimensions (x, y, z, …) or <b>polynomial degree</b>; the math notation stays the same. Always connect the math to a real meaning (e.g. salary and years of experience → grant a loan or not).</p></details>
+
+<details><summary>2. Types of learning</summary>
+<div class="tbl"><table><tr><th>Type</th><th>Idea</th><th>Example from lecture</th></tr>
+<tr><td><b>Supervised</b></td><td>Guided by a dataset with known labels; we use known answers to correct the model</td><td>Moving the line until misclassified points are fixed (PLA)</td></tr>
+<tr><td><b>Unsupervised</b></td><td>No labels or guidance, only the data itself; find structure</td><td><b>Clustering</b>: groups of nearby points; the middle of a group is its <b>centroid</b></td></tr>
+<tr><td><b>Semi-supervised</b></td><td>Mix of labeled and unlabeled (only mentioned)</td><td>–</td></tr>
+<tr><td><b>Reinforcement</b></td><td>Learn from <b>reward</b> for correct actions and <b>penalty</b> for wrong ones (“reinforce” = strengthen)</td><td>“Good, you got it right” vs “wrong, try again”</td></tr></table></div>
+<p>Aim: understand <i>how</i> a program learns instead of treating it as magic.</p></details>
+
+<details><summary>3. The learning setup (very testable)</summary>
+<ul><li><b>Target function f</b>: the true relation (e.g. x predicts y). <mark>Unknown.</mark></li>
+<li><b>Training examples</b>: input points with their corresponding outputs. We usually do not have all the data.</li>
+<li><b>Hypothesis set H</b>: all candidate functions (here <b>every possible line</b>). Written with script H (the script style has a fixed meaning; do not write it freely).</li>
+<li><b>Learning algorithm</b> (here PLA): picks one hypothesis <b>h</b> from H using the data.</li>
+<li><b>Final hypothesis g</b>: the best approximation to f that we found.</li>
+<li>Model: <code>wᵀx + bias</code> (a one-dimensional x reflects directly in y, plus the bias).</li></ul>
+<p>Pick a different h (a different line) and the answer for a <b>new, unseen point</b> may change (positive vs negative). That is why we study how reliable learning is.</p></details>
+
+<details><summary>4. Population vs sample; feasibility of learning</summary>
+<p><b>Population</b> = all data (may be unknown, or known but impractical to enumerate, e.g. a statistics agency cannot reach everyone). <b>Sample</b> = the part we actually have. We want to learn about the population from the sample.</p>
+<p>Choosing a sample: <b>guided</b> (chosen deliberately, e.g. interview across married/single, working/not, to represent the population) vs <b>completely random</b>. A single sample can be <b>biased</b> (e.g. only reds or one province).</p>
+<p><b>Feasibility study</b> analogy: is learning worthwhile? Yes, as long as we apply it carefully. Beware <b>over-simplification</b> that ruins the idea. Trick: don’t stop at one sample; <mark>take many samples</mark>.</p></details>
+
+<details><summary>5. Probability basics</summary>
+<ul><li><b>Independent</b> events: knowing one tells nothing about the other (drawing balls from a bag blindly, with no preference).</li>
+<li><b>Dependent</b> events: linked (two friends who always enter the lecture together).</li>
+<li>Binary event: P(red) = <b>μ</b>, so P(not red) = <b>1 − μ</b>. Probabilities of all outcomes sum to 1 (e.g. 70% + 30%).</li>
+<li><b>Joint</b> probability of independent events = <mark>multiply</mark>, so it is <b>smaller</b> (10% × 10% = 1%, not 20%).</li>
+<li><b>Possible</b> (can happen) is not <b>probable</b> (reasonable chance). A near-zero chance is possible but not probable.</li></ul></details>
+
+<details><summary>6. The coin experiment (the key calculation)</summary>
+<p>A fair coin: P(heads) = ½. P(10 heads in a row for one person) = (½)¹⁰ = <mark>1/1024</mark>. P(not all heads) = 1023/1024.</p>
+<p>With <b>1000 independent people</b>, each flipping 10 times: P(nobody gets 10 heads) = (1023/1024)¹⁰⁰⁰ ≈ <b>0.376</b>. So <mark>P(at least one gets 10 heads) = 1 − 0.376 ≈ 0.62</mark> (the lecturer rounded to “≈63%”, which is 1 − 1/e). A rare event for one trial becomes likely over many trials. “At least one” is solved with the <b>complement</b>: 1 − P(none).</p>
+<p>Lesson for learning: a rare fluke in a single sample is likely when we try many hypotheses/samples, so be careful.</p></details>
+
+<details><summary>7. Exponential growth and Euler’s number e</summary>
+<p>Linear: constant change. <b>Exponential</b> <code>y = bˣ</code>: the change itself changes (slope is not constant); a tiny change in the exponent gives a large change in y. Base b &gt; 1 → grows; base between 0 and 1 → decays.</p>
+<p><b>e ≈ 2.718</b> (Euler’s number) is the special base: the tangent line at any point of eˣ has a slope equal to the function’s value there. Seen in galaxies’ growth, chemical equations, and any process that repeats many times.</p>
+<p>Link: <code>lim (1 + 1/n)ⁿ = e</code> as n → ∞, and <code>lim (1 − 1/n)ⁿ = 1/e ≈ 0.37</code>. So with n tries each of chance 1/n, P(at least one success) → <mark>1 − 1/e ≈ 0.63</mark>. That is why the coin result is ≈ 63%.</p></details>
+</section>
+
+<section id="summary">
+<div class="q"><ul>
+<li><b>Supervised</b> (labels, guided) · <b>Unsupervised</b> (clusters, centroid) · <b>Semi</b> · <b>Reinforcement</b> (reward/penalty).</li>
+<li><b>f</b> unknown target → data → <b>H</b> (all lines) → algorithm picks <b>h</b> → best is <b>g ≈ f</b>.</li>
+<li><b>Population</b> (all) vs <b>sample</b> (what we have); samples can be biased.</li>
+<li>Independent: <b>multiply</b>. Complement: <b>1 − μ</b>.</li>
+<li>P(10 heads) = <b>1/1024</b>; 1000 tries → P(at least one) ≈ <b>62–63%</b>.</li>
+<li>At least one = <b>1 − P(none)</b>.</li>
+<li><b>e ≈ 2.718</b>; (1 − 1/n)ⁿ → 1/e; so 1 − 1/e ≈ 0.63.</li>
+<li>Exponential: growth rate is not constant.</li></ul></div>
+<h3>Memory triggers</h3>
+<div class="tip"><b>“F is Fixed but Foggy; H is Huge; G is Guess-best.”</b></div>
+<div class="tip"><b>“AND → multiply, AT LEAST ONE → 1 minus none.”</b></div>
+<div class="tip"><b>Spaced repetition:</b> quiz yourself today, tomorrow, in 3 days and 7 days; recompute 1 − (1023/1024)¹⁰⁰⁰ by hand each time.</div>
+<h3>Common mistakes &amp; traps</h3>
+<div class="tip trap">Adding probabilities of independent events instead of multiplying (10% and 10% is 1%, not 20%).</div>
+<div class="tip trap">Confusing <b>possible</b> with <b>probable</b>.</div>
+<div class="tip trap">Mixing up f (true, unknown) with g (our final approximation) or h (any candidate).</div>
+<div class="tip trap">Calling clustering supervised (it has no labels).</div>
+<div class="tip trap">Thinking exponential slope is constant, or that e is just a random number.</div>
+<h3>Compare</h3>
+<div class="tbl"><table><tr><th></th><th>Independent</th><th>Dependent</th></tr><tr><td>Knowing one</td><td>Tells nothing</td><td>Changes the other’s probability</td></tr><tr><td>Joint</td><td>P(A)·P(B)</td><td>Not simply the product</td></tr></table></div>
+<div class="tbl"><table><tr><th></th><th>Linear</th><th>Exponential</th></tr><tr><td>Change per step</td><td>Constant</td><td>Grows/shrinks with value</td></tr></table></div>
+</section>
+
+<section id="mcq"><p>Click an answer. <span id="score">Score: 0 / 0</span></p><div id="mq"></div></section>
+<section id="written"><div id="wq"></div></section>
+
+<section id="rev"><div class="q"><h3>Night-before cheat sheet</h3><ol>
+<li>Supervised = labels; unsupervised = clusters/centroid; reinforcement = reward/penalty.</li>
+<li>f unknown; H = all lines; algorithm picks h; g ≈ f.</li>
+<li>Population = all; sample = what we have; use many samples.</li>
+<li>Independent: P(A and B) = P(A)·P(B). Complement: 1 − μ.</li>
+<li>(½)¹⁰ = 1/1024. P(none in 1000) ≈ 0.376. P(≥ 1) ≈ 0.62.</li>
+<li>(1 − 1/n)ⁿ → 1/e; 1 − 1/e ≈ 0.632; e ≈ 2.718.</li>
+<li>Exponential: non-constant rate; tangent slope of eˣ = eˣ.</li></ol></div></section>
+</main>
+<script>
+var MC=[
+["Learning guided by a labeled dataset is:",["Unsupervised","Supervised","Reinforcement only","Random"],1,"Known answers correct the model."],
+["Grouping nearby points without labels is:",["Supervised","Clustering (unsupervised)","Regression","Reward learning"],1,"No labels; structure from data alone."],
+["The middle point of a cluster is called:",["Centroid","Tangent","Bias","Sample"],0,"Centroid = cluster center."],
+["Learning from rewards and penalties is:",["Clustering","Supervised","Reinforcement learning","Sampling"],2,"“Reinforce” = strengthen good behavior."],
+["The target function f is:",["Known","Unknown true relation","The sample","Our final line"],1,"We try to approximate it."],
+["The hypothesis set H here is:",["One line","All possible lines","The data","The labels"],1,"The algorithm picks one h from H."],
+["The final best approximation is called:",["f","H","g","μ"],2,"g ≈ f."],
+["A sample is:",["All the data","The part of the population we have","Always unbiased","The target"],1,"Population = all."],
+["Two events are independent when:",["They always occur together","Knowing one tells nothing about the other","They sum to 1","They are equal"],1,"Contrast with friends who arrive together."],
+["P(red) = μ. P(not red) is:",["μ","1 − μ","1 + μ","μ²"],1,"Complement."],
+["Two independent events each have 10% chance. Both together:",["20%","10%","1%","0.1%"],2,"0.1 × 0.1 = 0.01."],
+["P(10 heads in a row), fair coin:",["1/10","1/20","1/1024","1/512"],2,"(½)¹⁰ = 1/1024."],
+["P(not getting 10 heads) in one try:",["1/1024","1023/1024","1/2","0"],1,"Complement of 1/1024."],
+["P(at least one of 1000 people gets 10 heads) ≈",["0.1%","~37%","~62%","~99.9%"],2,"1 − (1023/1024)¹⁰⁰⁰ ≈ 0.62."],
+["“At least one” is easiest computed as:",["Sum all cases","1 − P(none)","P × n","P²"],1,"Use the complement."],
+["Possible vs probable:",["Identical","Possible = can happen; probable = reasonable chance","Probable = impossible","Possible = certain"],1,"Near-zero is possible but not probable."],
+["Why take many samples?",["One sample can be unrepresentative","To waste time","To remove f","To change labels"],0,"A single sample may be biased."],
+["Euler’s number e is about:",["3.14","2.718","1.618","1.414"],1,"e ≈ 2.718."],
+["lim (1 − 1/n)ⁿ as n→∞ equals:",["e","1/e","0","1"],1,"≈ 0.37, so 1 − 1/e ≈ 0.63."],
+["Exponential growth differs from linear because:",["Slope is constant","The rate of change itself changes","It never grows","It has no base"],1,"Small change in x → large change in y."]];
+var WR=[
+["List and distinguish the main types of learning.","Supervised: labeled data guides the model and its errors are corrected (e.g. adjusting the line in PLA). Unsupervised: no labels; the algorithm finds structure, e.g. clustering, where nearby points form groups with a centroid. Semi-supervised mixes labeled and unlabeled data. Reinforcement: the system is rewarded for correct actions and penalized for wrong ones, strengthening good behavior."],
+["Describe the components of the learning setup.","An unknown target function f relates inputs to outputs. We have training examples (inputs with outputs), which are only a sample of the population. A hypothesis set H (here all lines, wᵀx + bias) contains candidates. A learning algorithm (PLA) uses the data to select a hypothesis h; the final choice g approximates f. A different h may classify a new point differently, so we need to know whether learning is feasible."],
+["Compute the probability that at least one of 1000 people, each flipping a fair coin 10 times, gets 10 heads.","P(10 heads) = (½)¹⁰ = 1/1024, so P(not) = 1023/1024. Independent people multiply: P(nobody) = (1023/1024)¹⁰⁰⁰ ≈ 0.376. Therefore P(at least one) = 1 − 0.376 ≈ 0.62. A rare event per trial becomes likely over many trials."],
+["Explain independent vs dependent events and why joint probabilities shrink.","Independent events carry no information about each other (drawing blindly from a bag); dependent events do (two friends who attend together). For independent events P(A and B) = P(A)·P(B). Since each probability is below 1, the product is smaller than either (10% × 10% = 1%)."],
+["What is e and how does it connect to the coin result?","e ≈ 2.718 is the base of the natural exponential, whose tangent slope equals its value and which appears in growth processes. lim (1 + 1/n)ⁿ = e and lim (1 − 1/n)ⁿ = 1/e. With n tries of chance 1/n each, P(none) → 1/e ≈ 0.37, so P(at least one) → 1 − 1/e ≈ 0.63, matching the coin experiment."]];
+var NV=[["explain","Explanation"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+var nav=document.getElementById("nav");
+function show(id){NV.forEach(function(n){document.getElementById(n[0]).classList.toggle("on",n[0]==id);});[].forEach.call(nav.children,function(b){b.classList.toggle("on",b.dataset.id==id);});window.scrollTo(0,0);}
+NV.forEach(function(n){var b=document.createElement("button");b.textContent=n[1];b.dataset.id=n[0];b.onclick=function(){show(n[0]);};nav.appendChild(b);});
+var right=0,done=0,sc=document.getElementById("score");
+MC.forEach(function(m,i){var d=document.createElement("div");d.className="q";d.innerHTML="<b>"+(i+1)+". "+m[0]+"</b>";var ex=document.createElement("div");ex.className="ex";ex.textContent="Answer: "+m[1][m[2]]+". "+m[3];var bs=[];
+m[1].forEach(function(o,j){var b=document.createElement("button");b.textContent=o;bs.push(b);b.onclick=function(){if(d.dataset.d)return;d.dataset.d=1;done++;if(j==m[2])right++;b.classList.add(j==m[2]?"ok":"no");bs[m[2]].classList.add("ok");ex.classList.add("s");sc.textContent="Score: "+right+" / "+done;};d.appendChild(b);});
+d.appendChild(ex);document.getElementById("mq").appendChild(d);});
+WR.forEach(function(w,i){var e=document.createElement("details");e.innerHTML="<summary>Q"+(i+1)+". "+w[0]+"</summary><p>"+w[1]+"</p>";document.getElementById("wq").appendChild(e);});
+var r=document.documentElement;document.getElementById("th").onclick=function(){var dark=r.dataset.theme?r.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=dark?"light":"dark";};
+show("explain");
+</script></body></html>
