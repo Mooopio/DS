@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>ML Lecture 1 — The Learning Problem · Exam Prep</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--tx:#1b2030;--mu:#5b6478;--ac:#4f46e5;--ac2:#e0e7ff;--ok:#16a34a;--bad:#dc2626;--hl:#fff3b0;--bd:#e3e6ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme=light]){}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0f1220;--card:#181c2e;--tx:#e8eaf3;--mu:#9aa3bb;--ac:#818cf8;--ac2:#25294a;--hl:#5a4b00;--bd:#2a2f48;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0f1220;--card:#181c2e;--tx:#e8eaf3;--mu:#9aa3bb;--ac:#818cf8;--ac2:#25294a;--hl:#5a4b00;--bd:#2a2f48;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--bd);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+header h1{font-size:15px;margin:0 auto 0 0}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:6px 12px;transition:.2s}
+button:hover{border-color:var(--ac)}button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:860px;margin:0 auto;padding:16px}
+section{display:none;animation:f .35s}section.on{display:block}@keyframes f{from{opacity:0;transform:translateY(6px)}}
+.card,details{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin:12px 0}
+summary{cursor:pointer;font-weight:650;color:var(--ac)}details[open] summary{margin-bottom:8px}
+h2{margin:6px 0}h3{margin:14px 0 4px}mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:4px}
+.def{border-left:4px solid var(--ac);background:var(--ac2);padding:8px 12px;border-radius:8px;margin:8px 0}
+.warn{border-left:4px solid var(--bad);padding:8px 12px;border-radius:8px;background:var(--card);margin:8px 0}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px}td,th{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--ac2)}
+svg{max-width:100%;height:auto;display:block;margin:8px auto}svg text{fill:var(--tx);font:13px system-ui}svg .b{fill:var(--card);stroke:var(--ac);stroke-width:2}svg .l{stroke:var(--tx);stroke-width:2;fill:none}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}.opt.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.opt.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+.ex{display:none;margin-top:8px;color:var(--mu)}.ex.show{display:block}.sc{font-weight:700;color:var(--ac)}
+code{background:var(--ac2);padding:1px 5px;border-radius:5px}
+</style></head><body>
+<header><h1>🎓 ML Lecture 1 · The Learning Problem</h1>
+<button data-t="e" class="on">Explain</button><button data-t="s">Summary</button><button data-t="m">Memory</button><button data-t="q">MCQs</button><button data-t="w">Written</button><button data-t="r">Revision</button><button id="th" aria-label="theme">🌓</button></header>
+<main>
+
+<section id="e" class="on"><h2>Deep Explanation</h2>
+<p>Tap each block to expand. <mark>Highlighted</mark> = exam favourites.</p>
+
+<details open><summary>1 · What is the course & what is learning?</summary>
+<p>The course runs from <b>abstract theory</b> to <b>extreme practice</b> (“rules of thumb”). Storyline: <i>What is learning? → Can we learn? → How to do it? → How to do it well? → Take-home lessons.</i> Colours: red = theory early, blue = practical late. Lecture 3 (linear models) is deliberately out of sequence: it gives you tools to experiment with early.</p>
+<div class="def"><b>Premise of learning:</b> use a set of <mark>observations (data)</mark> to uncover an <mark>underlying process</mark> (in our case the target function).</div>
+<p>Statistics does the same (process = probability distribution, observations = samples). Broad premise ⇒ rediscovered in many fields. A “type” of learning exists when its assumptions need their own maths and algorithms.</p></details>
+
+<details open><summary>2 · The 3 ingredients of a learning problem (Netflix)</summary>
+<p>Netflix paid <mark>$1 million</mark> to the first team improving its recommender by just <mark>10%</mark>: better recommendations → more rentals → far more profit. Same logic in financial forecasting: tiny gains = lots of money.</p>
+<div class="def"><b>ML is applicable when:</b><br>1️⃣ A <b>pattern exists</b> (no pattern = nothing to learn).<br>2️⃣ We <b>cannot pin it down mathematically</b> (else just write the formula/code).<br>3️⃣ We <b>have data</b> (first question to any client: “What data do you have?”).</div>
+<p><b>Movie example:</b> ratings relate to a viewer’s other ratings and other viewers’ ratings (pattern), but you can’t write a “17th-order polynomial” for it.</p></details>
+
+<details><summary>3 · Movie-rating solution (latent factors)</summary>
+<p><b>Hand-made way (not ML):</b> describe viewer as a vector of tastes (likes comedy? action? blockbuster? lead actor?) and movie as a vector of contents. Match coordinates and add contributions → predicted rating. Problem: you must watch every movie and interview every viewer.</p>
+<p><b>Learning way:</b> start with <mark>random</mark> viewer and movie vectors (≈300 factors). Take an actual rating, <mark>nudge</mark> both vectors so their <mark>inner product</mark> moves toward that rating. Repeat over ~<b>100 million</b> ratings, cycling many times. Factors become meaningful; for an unseen (viewer, movie) pair, the inner product predicts the rating. This was one of the winning solutions.</p>
+<p>💡 <i>Analogy:</i> tuning thousands of radio knobs a tiny bit each time you hear a wrong note, until the song comes out right.</p></details>
+
+<details open><summary>4 · Formal components (credit-approval metaphor)</summary>
+<div class="tw"><table><tr><th>Symbol</th><th>Meaning</th><th>Credit example</th></tr>
+<tr><td><b>x</b> ∈ X</td><td>Input (d-dim vector)</td><td>Applicant: salary, years in residence, debt…</td></tr>
+<tr><td><b>y</b> ∈ Y</td><td>Output</td><td>+1 approve / −1 deny (good/bad customer)</td></tr>
+<tr><td><b>f: X→Y</b></td><td><mark>Target function, UNKNOWN</mark> (ideal formula)</td><td>Ideal credit approval</td></tr>
+<tr><td><b>Data</b></td><td>(x₁,y₁)…(x<sub>N</sub>,y<sub>N</sub>), N points</td><td>Past customers + how they turned out in hindsight (e.g. after 5 years)</td></tr>
+<tr><td><b>H</b></td><td>Hypothesis set (candidate formulas); element <b>h</b></td><td>All perceptrons</td></tr>
+<tr><td><b>A</b></td><td>Learning algorithm</td><td>PLA</td></tr>
+<tr><td><b>g</b></td><td>Final hypothesis, g ≈ f (known to us, unlike f)</td><td>Formula handed to the bank</td></tr></table></div>
+<svg viewBox="0 0 640 250" role="img" aria-label="Learning diagram"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="currentColor"/></marker></defs>
+<g style="color:var(--tx)"><rect class="b" x="10" y="10" width="190" height="50" rx="10"/><text x="105" y="40" text-anchor="middle">Unknown target f</text>
+<rect class="b" x="10" y="95" width="190" height="55" rx="10"/><text x="105" y="118" text-anchor="middle">Training examples</text><text x="105" y="138" text-anchor="middle">(x₁,y₁)…(x_N,y_N)</text>
+<rect class="b" x="250" y="95" width="150" height="55" rx="10"/><text x="325" y="128" text-anchor="middle">Learning algorithm A</text>
+<rect class="b" x="250" y="10" width="150" height="50" rx="10"/><text x="325" y="40" text-anchor="middle">Hypothesis set H</text>
+<rect class="b" x="450" y="95" width="180" height="55" rx="10"/><text x="540" y="128" text-anchor="middle">Final hypothesis g ≈ f</text>
+<path class="l" d="M105 60V93" marker-end="url(#a)"/><path class="l" d="M200 122H248" marker-end="url(#a)"/><path class="l" d="M325 60V93" marker-end="url(#a)"/><path class="l" d="M400 122H448" marker-end="url(#a)"/><path class="l" stroke-dasharray="5 4" d="M200 35H248" opacity="0"/></g>
+<text x="320" y="200" text-anchor="middle">f is seen ONLY through the examples. A picks g from H.</text><text x="320" y="222" text-anchor="middle">Learning model = H + A (e.g. perceptron + PLA)</text></svg>
+<p><b>Reading it:</b> you don’t control f or the data (the client dictates them). You <mark>choose H and A</mark> (your solution tools) and hand back g.</p>
+<div class="def"><b>Learning model</b> = hypothesis set + learning algorithm. Perceptron+PLA · Neural network+backpropagation · SVM (RBF)+quadratic programming.</div></details>
+
+<details><summary>5 · Why include a hypothesis set H at all?</summary>
+<p><b>No downside:</b> in practice you already say “I’ll use linear / NN / SVM” (that <i>is</i> picking H). If you refuse to restrict, H = all possible functions, so no generality is lost.<br><b>Upside:</b> H plays a <mark>pivotal role in the theory</mark> — it decides <i>can we learn</i> and <i>how</i>. The H-size/complexity vs data question is answered in later lectures.</p></details>
+
+<details open><summary>6 · The Perceptron (the simple model)</summary>
+<p>Weight each attribute, add linearly = <b>credit score</b>, compare with a <b>threshold</b>. Salary → big positive weight; outstanding debt → negative weight.</p>
+<div class="def">h(x) = sign( Σᵢ₌₁ᵈ wᵢxᵢ − threshold )  → +1 approve if positive, −1 deny if negative.<br><b>Trick:</b> set w₀ = −threshold and add artificial x₀ = +1 ⇒ <mark>h(x) = sign(Σᵢ₌₀ᵈ wᵢxᵢ) = sign(wᵀx)</mark> (inner product).</div>
+<p>Parameters that define one hypothesis: <b>w₁…w_d and the threshold</b> (w₀). Geometrically (if data are <mark>linearly separable</mark>) h is a <b>line</b> (plane in higher d); changing weights moves the line. The algorithm starts with random weights = random line and moves it until good customers and bad ones are on opposite sides.</p>
+<p>If wᵀx = 0 exactly: technical detail. Lecturer’s convention: sign(0)=0, so it counts as an error either way.</p></details>
+
+<details open><summary>7 · Perceptron Learning Algorithm (PLA)</summary>
+<p>Misclassified point ⇔ sign(wᵀxₙ) ≠ yₙ. Fix it:</p>
+<div class="def"><b>w ← w + yₙ·xₙ</b> &nbsp;(iterate t = 1,2,3,…; pick <mark>any</mark> misclassified point each time)</div>
+<svg viewBox="0 0 560 210" role="img" aria-label="PLA update"><defs><marker id="b" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="currentColor"/></marker></defs>
+<g style="color:#dc2626"><path class="l" style="stroke:#dc2626" d="M60 160L170 60" marker-end="url(#b)"/></g>
+<g style="color:#2563eb"><path class="l" style="stroke:#2563eb" d="M60 160L260 140" marker-end="url(#b)"/></g>
+<g style="color:#16a34a"><path class="l" style="stroke:#16a34a" d="M60 160L370 40" marker-end="url(#b)"/></g>
+<text x="95" y="52" style="fill:#dc2626">old w</text><text x="255" y="160" style="fill:#2563eb">x (y=+1)</text><text x="375" y="40" style="fill:#16a34a">new w = w + x</text>
+<text x="400" y="110">y=+1 but wᵀx&lt;0 (angle &gt; 90°)</text><text x="400" y="130">adding x rotates w toward x</text><text x="400" y="150">⇒ inner product becomes positive</text><text x="400" y="180">y=−1: SUBTRACT x instead</text></svg>
+<p><b>Intuition:</b> inner product positive ⇔ w and x “agree”. If y=+1 and they disagree, add x to pull w toward x; if y=−1 and they wrongly agree, subtract x. This is only <i>motivation</i> — it doesn’t prove it works.</p>
+<div class="warn"><b>Catch:</b> fixing one point may break others that were right. Still, <mark>if the data are linearly separable, PLA is guaranteed to converge</mark> to a solution classifying all points correctly (needs a proof; “not that hard”). It can take very long (badly with dimension; pathological cases take forever).</div>
+<p><b>Not separable?</b> PLA never stops (always some misclassified point) and can jump from very good to terrible. Use the <mark>pocket algorithm</mark> (same rule, small modification) or a nonlinear transform (next lectures). In practice assume data is <i>not</i> separable.</p>
+<p><b>Key warning:</b> matching historical records ≠ good on future customers. That is the whole point of the theory.</p></details>
+
+<details open><summary>8 · Types of learning</summary>
+<div class="tw"><table><tr><th></th><th>Supervised</th><th>Unsupervised</th><th>Reinforcement</th></tr>
+<tr><td>Data given</td><td>(input, <b>correct</b> output)</td><td>Input only, no target</td><td>Input, <b>some</b> output, <b>grade</b> of that output</td></tr>
+<tr><td>Examples</td><td>Movie ratings, credit history, coin recognition (size &amp; mass → 1¢,5¢,10¢,25¢)</td><td>Coins without labels → clusters; Portuguese radio for a month</td><td>Toddler &amp; hot tea; backgammon self-play</td></tr>
+<tr><td>Result</td><td>Boundaries separating classes; data can be discarded afterwards</td><td>Clusters “type 1–4”; higher-level representation of input</td><td>Credit propagated back to all moves; ~world champion NN</td></tr>
+<tr><td>Role in course</td><td><mark>Main focus</mark></td><td>Brief; famous algorithm later</td><td>Brief intro</td></tr></table></div>
+<ul><li><b>Supervised</b>: “as if a supervisor helps you”.</li>
+<li><b>Unsupervised</b>: number of clusters can be <mark>ambiguous</mark>; one labelled coin per cluster afterwards is enough (instead of many examples).</li>
+<li><b>Reinforcement</b>: backgammon target = best move given board state; generating those requires being an expert already (vicious cycle), so let the computer try any move, win/lose, propagate credit. Done ~100 billion times, days of CPU.</li></ul></details>
+
+<details><summary>9 · The learning puzzle (why learning seems impossible)</summary>
+<p>3×3 black/white patterns: 3 examples labelled −1, 3 labelled +1, then a test point. Audience mostly said +1, a few −1. <mark>Both answers are valid</mark>: e.g. rule “top-left square” gives one answer, rule “pattern is symmetric” gives the other; infinite consistent functions exist.</p>
+<div class="warn">f is truly unknown (could be anything), and a finite sample says nothing guaranteed outside it. Memorising ≠ learning. Resolution (next lecture): learning is feasible <i>without</i> changing the premise that f is unknown.</div></details>
+
+<details><summary>10 · Q&amp;A highlights (examinable ideas)</summary>
+<ul><li><b>Sampling bias:</b> bank only sees outcomes of <i>accepted</i> applicants; boundary still works decently since rejected ones are usually deeper in the “bad” region.</li>
+<li><b>How much data?</b> Theory answers it later; in practice you don’t control N (100 million vs &lt;100 points).</li>
+<li><b>Bigger H</b> fits better but memorises (e.g. 7,000-order polynomial on 50 points); complexity of H dictates data needed. Validation (later) gives feedback.</li>
+<li><b>Don’t look at your data</b> to pick the model (tailoring to one dataset: “data snooping”). Ask the client about the <i>process</i> instead.</li>
+<li><b>ML vs statistics:</b> ML = fewest assumptions, widest territory; statistics = more assumptions, rigorous proofs.</li>
+<li><b>Optimization</b> is a tool, not the goal (e.g. QP for SVM); local vs global minima come with neural nets.</li>
+<li><b>H</b> can be finite or continuous/infinite; learning still possible under a theory condition.</li>
+<li><b>Bottleneck of ML</b> is <mark>generalization</mark>, not computation time. Perceptron: bad computationally, good for generalization (simple model).</li>
+<li>Output can be real-valued (linear regression, lecture 3). Learning algorithm usually <b>minimises an error function</b>; H matters more than A for generalization. Error measures: next lecture week.</li>
+<li><b>Perceptron ↔ neuron:</b> neuron fires (+1) if combined stimuli exceed a threshold.</li>
+<li>Unlearnable: a pseudo-random target — no pattern. Model selection / Bayesian view come late (“last but not least”).</li></ul></details>
+</section>
+
+<section id="s"><h2>Smart Summary</h2><div class="card"><ul>
+<li><b>Learning</b> = data → underlying process. <b>Need:</b> pattern + no formula + data.</li>
+<li><b>Notation:</b> input <b>x</b>, output <b>y</b>, target <b>f</b> (unknown), data <b>(xₙ,yₙ) N pts</b>, hypothesis set <b>H</b>, algorithm <b>A</b>, final <b>g ≈ f</b>.
+<ul><li>Model = <b>H + A</b>. You choose H, A; client gives f, data.</li><li>H: no loss of generality; crucial for theory.</li></ul></li>
+<li><b>Perceptron:</b> h(x)=sign(wᵀx), w₀=−threshold, x₀=1. Line/plane. <b>PLA:</b> w←w+yx on a misclassified point.
+<ul><li>Converges <b>iff-ish</b>: guaranteed when <b>linearly separable</b>; else pocket / transforms.</li></ul></li>
+<li><b>Types:</b> supervised (labels) · unsupervised (no labels, clusters) · reinforcement (graded output).</li>
+<li><b>Puzzle:</b> many functions fit the sample ⇒ naive learning impossible ⇒ theory needed.</li>
+<li><b>Real concern:</b> performance on <b>new</b> data (generalization), not fitting history.</li>
+<li><b>Movie ML:</b> random factors, nudge, 100M ratings, inner product. Netflix $1M for 10%.</li></ul></div></section>
+
+<section id="m"><h2>Memory Optimization</h2>
+<div class="card"><h3>Mnemonics</h3>
+<p><b>PDF</b> (3 ingredients): <b>P</b>attern · <b>D</b>on’t-know-formula (can’t pin down) · <b>F</b>ound data (have data).</p>
+<p><b>F → D → H → A → G</b>: “<b>F</b>ind <b>D</b>ata, <b>H</b>ire <b>A</b> <b>G</b>enius”: target f, Data, Hypothesis set, Algorithm, g.</p>
+<p><b>S-U-R = Supervisor / Unknown / Reward</b> (labels / none / grade).</p>
+<p><b>PLA sign rule:</b> “<i>y says add or subtract</i>”: w + y·x.</p></div>
+<div class="card"><h3>Compare similar things</h3><div class="tw"><table><tr><th>Pair</th><th>Difference</th></tr>
+<tr><td>f vs g</td><td>f unknown ideal; g our known approximation</td></tr><tr><td>h vs g</td><td>h any candidate in H; g the one A picked</td></tr>
+<tr><td>H vs A</td><td>H = what’s allowed; A = how to search it</td></tr>
+<tr><td>Memorising vs learning</td><td>Fit sample vs good outside the sample</td></tr>
+<tr><td>Unsupervised vs reinforcement</td><td>None vs graded output given</td></tr>
+<tr><td>Statistics vs ML</td><td>Many assumptions + proofs vs few assumptions + broad use</td></tr></table></div></div>
+<div class="card"><h3>⚠ Common mistakes &amp; traps</h3><ul>
+<li>“PLA converges on any data” ✗ — only if linearly separable.</li>
+<li>“Matching history means good future” ✗.</li>
+<li>Forgetting x₀=1 is <b>artificial</b>, and w₀=<b>−</b>threshold.</li>
+<li>Saying H is optional/harmful ✗.</li>
+<li>Thinking f is eventually known ✗ — always unknown.</li>
+<li>Believing computation is the main ML bottleneck ✗ — generalization is.</li>
+<li>“Perceptron generalizes badly” ✗ — computationally slow, generalization good (simple).</li>
+<li>Choosing the model by inspecting the data ✗.</li></ul></div>
+<div class="card"><h3>Spaced repetition plan</h3><p>Day 0 read + quiz · Day 1 redo MCQs you missed · Day 3 write notation + PLA from memory · Day 7 written model answers · Night before: Revision tab only.</p></div></section>
+
+<section id="q"><h2>MCQs <span class="sc" id="sc"></span></h2><p>Click an answer. 🟢 easy · 🟡 medium · 🔴 hard.</p><div id="qs"></div><button id="rs">Reset</button></section>
+
+<section id="w"><h2>Written Questions</h2><div id="ws"></div></section>
+
+<section id="r"><h2>Rapid Revision · Night-Before Sheet</h2>
+<div class="card"><b>Learning needs:</b> pattern ✔ · can’t write formula ✔ · data ✔<br>
+<b>Setup:</b> f:X→Y unknown · data (xₙ,yₙ) · H · A · g≈f<br>
+<b>Perceptron:</b> h(x)=sign(Σ₀ᵈ wᵢxᵢ)=sign(wᵀx), x₀=1, w₀=−θ<br>
+<b>PLA:</b> pick misclassified (xₙ,yₙ) → w←w+yₙxₙ → repeat. Converges if linearly separable. Pocket if not.<br>
+<b>Misclassified:</b> sign(wᵀxₙ)≠yₙ<br>
+<b>Types:</b> Supervised (x,y) · Unsupervised (x) · Reinforcement (x, output, grade)<br>
+<b>Netflix:</b> $1M, 10% improvement · 100M ratings · random factors + nudging inner products<br>
+<b>Puzzle:</b> sample can’t pin down f outside ⇒ need theory (next lecture)<br>
+<b>Remember:</b> goal = generalize · H matters most · don’t snoop data · sampling bias · pseudo-random target unlearnable · bottleneck = generalization<br>
+<b>Perceptron:</b> neuron analogy (fires above threshold)<br>
+<b>Notation:</b> N = #points, d = dimension, f target, g final, h candidate, H set</div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+document.querySelectorAll("header [data-t]").forEach(b=>b.onclick=()=>{document.querySelectorAll("header [data-t]").forEach(x=>x.classList.toggle("on",x==b));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==b.dataset.t));scrollTo(0,0)});
+$("#th").onclick=()=>{const r=document.documentElement,d=r.dataset.theme?r.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=d?"light":"dark"};
+const Q=[
+["🟢","The three ingredients for applying ML are:",["Pattern, no mathematical formula, data","Pattern, formula, data","Data, labels, GPU","Noise, data, algorithm"],0,"Pattern exists, cannot be pinned down mathematically, and data available."],
+["🟢","Netflix paid $1M for what improvement?",["1%","5%","10%","50%"],2,"10% improvement over its in-house recommender."],
+["🟢","In the formal setup the target function is denoted:",["g","f","h","H"],1,"f is the unknown target; g is the final hypothesis."],
+["🟢","For credit approval, Y is:",["Real numbers","{+1, −1}","Vectors in ℝᵈ","The set of customers"],1,"Binary: approve (+1) or deny (−1)."],
+["🟢","The learning model consists of:",["Data and target","H and A","f and g","x and y"],1,"Hypothesis set plus learning algorithm."],
+["🟢","Which pair is correct?",["Perceptron–backpropagation","Neural network–backpropagation","SVM–PLA","Perceptron–QP"],1,"NN uses backprop; perceptron uses PLA; SVM uses quadratic programming."],
+["🟡","In the movie solution the learning starts from:",["Expert-built factors","Random factors","All zeros","Genre labels"],1,"Random viewer and movie vectors, nudged toward actual ratings."],
+["🟡","The movie rating is predicted by:",["Sum of ratings","Inner product of viewer and movie vectors","Average rating","Sign of x"],1,"Matching factors and adding contributions = inner product."],
+["🟡","Why is H included in the formalization?",["It reduces accuracy","No downside and it is pivotal in the theory","Algorithms cannot run without it","It removes the need for data"],1,"No loss of generality; theory of learning depends on H."],
+["🟡","In the perceptron, w₀ equals:",["threshold","−threshold","1","0"],1,"w₀ = −threshold, paired with artificial x₀ = +1."],
+["🟡","A perceptron hypothesis is geometrically:",["A circle","A line/plane separating regions","A cluster","A polynomial"],1,"Linear separator; weights move the line."],
+["🟡","PLA update for misclassified (xₙ,yₙ):",["w ← w − xₙ","w ← w + yₙxₙ","w ← yₙ","w ← w·xₙ"],1,"Add xₙ if y=+1, subtract if y=−1."],
+["🟡","A point with y=−1 is misclassified. PLA will:",["Add x to w","Subtract x from w","Leave w","Reset w"],1,"yₙ=−1 ⇒ w − x."],
+["🟡","PLA is guaranteed to converge when:",["Data is large","Data is linearly separable","d is small","Always"],1,"Proof needed; separability is the condition."],
+["🟡","On non-separable data PLA:",["Converges slowly","Never terminates and may jump from good to bad","Finds the best line","Stops after N steps"],1,"Always a misclassified point remains; quality can swing wildly."],
+["🟡","The pocket algorithm is:",["A neural network","A small modification of PLA for non-separable data","A clustering method","A validation tool"],1,"Same rule, minor change."],
+["🟡","Coin recognition with labelled coins is:",["Unsupervised","Supervised","Reinforcement","None"],1,"Labels (1,5,10,25) given."],
+["🟡","Learning Portuguese by only listening to radio is analogous to:",["Supervised","Unsupervised","Reinforcement","Validation"],1,"No meanings given; building a higher-level representation."],
+["🟡","Reinforcement learning gives:",["Correct output","Some output plus a grade","Only input","Clusters"],1,"The toddler/tea and backgammon examples."],
+["🔴","Why use reinforcement in backgammon?",["Labels are free","Producing best-move labels needs an expert already","It is faster than supervised","No data exists"],1,"Vicious cycle: you must already be a good player to label moves."],
+["🔴","In the 3×3 puzzle, why are both +1 and −1 acceptable?",["Test point is ambiguous noise","Many functions fit the sample but differ outside","Humans are bad learners","Perceptron cannot decide"],1,"E.g. top-left rule vs symmetry rule."],
+["🔴","The bank’s data suffers from:",["Overfitting","Sampling bias","Label noise","Underfitting"],1,"Only accepted applicants’ outcomes are observed."],
+["🔴","Main ML bottleneck per the lecturer:",["Computation time","Generalization beyond seen data","Memory","Optimization"],1,"Even with huge data, generalization is the issue."],
+["🔴","Why avoid inspecting your data to pick the model?",["It is illegal","You tailor the model to one dataset and may fail on another","Data is secret","It is slow"],1,"Ask about the process instead."],
+["🔴","Which cannot be learned even with infinite data?",["Credit approval","A pseudo-random target","Movie rating","Coin type"],1,"No pattern ⇒ nothing to learn."],
+["🔴","Which statement about the perceptron is TRUE?",["Good computationally, bad generalization","Bad computationally, good generalization","Bad at both","Good at both"],1,"Simple model ⇒ good generalization; can be slow."],
+["🔴","Where does the sign(0) case end up (lecturer’s convention)?",["+1","−1","0, always an error","Random"],2,"Treated as an error either way; purely technical."]];
+let sc=0,dn=0;const qs=$("#qs");
+function build(){qs.innerHTML="";sc=dn=0;$("#sc").textContent="";Q.forEach((q,i)=>{const d=document.createElement("div");d.className="card";d.innerHTML=`<b>${i+1}. ${q[0]} ${q[1]}</b>`;q[2].forEach((o,j)=>{const b=document.createElement("button");b.className="opt";b.textContent=String.fromCharCode(65+j)+". "+o;b.onclick=()=>{if(d.dataset.d)return;d.dataset.d=1;dn++;if(j==q[3])sc++;b.classList.add(j==q[3]?"ok":"no");d.querySelectorAll(".opt")[q[3]].classList.add("ok");e.classList.add("show");$("#sc").textContent=`Score ${sc}/${dn} of ${Q.length}`};d.appendChild(b)});const e=document.createElement("div");e.className="ex";e.innerHTML="💡 "+q[4];d.appendChild(e);qs.appendChild(d)})}
+$("#rs").onclick=build;build();
+const W=[
+["Short: Define supervised, unsupervised and reinforcement learning with one example each.","<b>Supervised</b>: data = (input, correct output), e.g. past customers with their credit outcome. <b>Unsupervised</b>: input only, no target; e.g. clustering unlabeled coin measurements, or absorbing Portuguese from radio. <b>Reinforcement</b>: input, a chosen (possibly arbitrary) output, and a grade of it; e.g. toddler touching hot tea, or backgammon self-play where win/loss credit is propagated to moves."],
+["Short: Why must a learning problem satisfy three conditions?","(1) A <b>pattern</b> must exist, otherwise there is nothing to learn. (2) It <b>cannot be pinned down mathematically</b>, otherwise just implement the formula. (3) <b>Data</b> is available, since learning is from examples. Example: movie ratings relate to past ratings of the viewer and other viewers, no formula exists, millions of ratings exist."],
+["Long: Describe the components of the learning problem and draw the learning diagram, using credit approval.","<b>Input x</b>: applicant vector in ℝᵈ (salary, debt, years in residence). <b>Output y</b>: ±1. <b>Target f: X→Y</b>: ideal approval formula, unknown. <b>Data</b>: N past customers (xₙ,yₙ) with outcomes in hindsight. <b>Hypothesis set H</b>: candidate formulas, <b>algorithm A</b> picks <b>g</b> from H using the data; g ≈ f is the formula given to the bank. Diagram: f → training examples → A ← H, A → g (see Explain §4). You choose H and A; f and data are dictated. H adds no loss of generality and is central to the theory; model = H + A. Goal: g performs well on <i>new</i> customers, not just history."],
+["Long: Define the perceptron and PLA, derive the vector form, explain why updates help and state convergence.","h(x)=sign(Σᵢ₌₁ᵈ wᵢxᵢ − θ): weighted credit score vs threshold. Set w₀=−θ, x₀=1 ⇒ h(x)=sign(wᵀx). Parameters w define a line/plane. PLA: pick any misclassified point (sign(wᵀxₙ)≠yₙ), set w←w+yₙxₙ. If y=+1 and wᵀx&lt;0, adding x rotates w toward x (inner product rises); if y=−1, subtracting does the opposite. An update may break other points, yet if the data is linearly separable PLA converges to a w classifying all points correctly (provable); it may be very slow. If not separable it never stops and can swing badly; use pocket or nonlinear transforms."],
+["Long: The learning puzzle suggests learning is impossible. Explain the argument and what it implies.","Given 6 labelled 3×3 patterns and an unlabeled test pattern, humans split between +1 and −1: both are consistent (e.g. top-left rule vs symmetry rule). Since f is truly unknown, infinitely many functions agree with a finite sample but differ outside it, so the sample alone cannot determine f outside. Memorising the sample is not learning. Implication: we need a theory showing learning is feasible without assuming f is known; the next lecture provides it, using H, data size and generalization."]];
+$("#ws").innerHTML=W.map((w,i)=>`<details><summary>${i+1}. ${w[0]}</summary><div class="def">${w[1]}</div></details>`).join("");
+</script></body></html>

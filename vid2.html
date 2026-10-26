@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>ML Lecture 2 — Is Learning Feasible? · Exam Prep</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root{--bg:#f7f8fb;--card:#fff;--tx:#1b2030;--mu:#5b6478;--ac:#0d9488;--ac2:#ccfbf1;--ok:#16a34a;--bad:#dc2626;--hl:#fff3b0;--bd:#e3e6ee;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0e1517;--card:#162024;--tx:#e6f0f0;--mu:#9bb0b3;--ac:#2dd4bf;--ac2:#12332f;--hl:#5a4b00;--bd:#26383c;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#0e1517;--card:#162024;--tx:#e6f0f0;--mu:#9bb0b3;--ac:#2dd4bf;--ac2:#12332f;--hl:#5a4b00;--bd:#26383c;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--bd);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+header h1{font-size:15px;margin:0 auto 0 0}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:6px 12px;transition:.2s}
+button:hover{border-color:var(--ac)}button.on{background:var(--ac);color:#04201c;border-color:var(--ac)}
+main{max-width:860px;margin:0 auto;padding:16px}
+section{display:none;animation:f .35s}section.on{display:block}@keyframes f{from{opacity:0;transform:translateY(6px)}}
+.card,details{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;margin:12px 0}
+summary{cursor:pointer;font-weight:650;color:var(--ac)}details[open] summary{margin-bottom:8px}
+h2{margin:6px 0}h3{margin:14px 0 4px}mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:4px}
+.def{border-left:4px solid var(--ac);background:var(--ac2);padding:8px 12px;border-radius:8px;margin:8px 0}
+.warn{border-left:4px solid var(--bad);padding:8px 12px;border-radius:8px;margin:8px 0}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:460px}td,th{border:1px solid var(--bd);padding:6px 8px;text-align:left;vertical-align:top}th{background:var(--ac2)}
+svg{max-width:100%;height:auto;display:block;margin:8px auto}svg text{fill:var(--tx);font:13px system-ui}svg .b{fill:var(--card);stroke:var(--ac);stroke-width:2}svg .l{stroke:var(--tx);stroke-width:2;fill:none}
+.opt{display:block;width:100%;text-align:left;margin:6px 0}.opt.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.opt.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+.ex{display:none;margin-top:8px;color:var(--mu)}.ex.show{display:block}.sc{font-weight:700;color:var(--ac)}
+input{font:inherit;width:110px;padding:5px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+.big{font-size:22px;font-weight:700;color:var(--ac)}
+</style></head><body>
+<header><h1>🎲 ML Lecture 2 · Is Learning Feasible?</h1>
+<button data-t="e" class="on">Explain</button><button data-t="s">Summary</button><button data-t="m">Memory</button><button data-t="q">MCQs</button><button data-t="w">Written</button><button data-t="r">Revision</button><button id="th" aria-label="theme">🌓</button></header>
+<main>
+
+<section id="e" class="on"><h2>Deep Explanation</h2><p>Tap blocks to expand. <mark>Highlighted</mark> = exam favourites.</p>
+
+<details open><summary>1 · Recap & the problem</summary>
+<p>Three criteria to check for ML: <b>pattern exists</b>, <b>can’t pin it down mathematically</b>, <b>have data</b>. Only one is essential:</p>
+<ul><li>No pattern → you can still try; you’ll fail, but learning theory gives something you can <i>measure</i> that tells you whether you learned. No harm done.</li>
+<li>Can be programmed mathematically → ML still works but isn’t recommended (not optimal).</li>
+<li><mark>No data → nothing can be done.</mark></li></ul>
+<p>Supervised learning: unknown target <b>f</b> (X→Y), training examples give the outputs explicitly. Unsupervised = no output; reinforcement = only a reward/punishment. <b>Learning model</b> = algorithm + hypothesis set H; g ∈ H hopefully ≈ f. Unknown f is a generous assumption: you needn’t worry about what generated the examples.</p>
+<div class="warn"><b>The problem (end of lecture 1):</b> I give you f on a finite set. Outside it f can take any value (even on the millionth-and-first point). So how can learning be feasible? This lecture: <b>feasible in a probabilistic sense</b>.</div>
+<p><b>Roadmap:</b> simple probabilistic situation → translate to learning → make it real learning → a dilemma → solution.</p></details>
+
+<details open><summary>2 · The bin experiment</summary>
+<div class="def">Bin of red/green marbles. <b>μ</b> = probability of red (bin fraction), <mark>unknown constant</mark> (bin is opaque), P(green)=1−μ. Pick a sample of <b>N</b> marbles <mark>independently</mark> (infinite bin, or with replacement). <b>ν</b> = fraction of red in the sample (random; changes sample to sample).</div>
+<p><b>Does ν tell us anything about μ?</b><br><b>No</b> (possible): bin 90% red, sample of 100 all green could happen. <b>Yes</b> (probable): if the sample is big enough, ν is <i>likely</i> close to μ. Analogy: <mark>presidential poll</mark> — 3,000 people predict ~100 million voters. In science/engineering, “almost certain” opens a world of possibilities.</p></details>
+
+<details open><summary>3 · Hoeffding’s Inequality (the key formula)</summary>
+<div class="def">P[ |ν − μ| &gt; ε ] ≤ 2·e<sup>−2ε²N</sup> &nbsp; for <b>any</b> ε&gt;0 and <b>any</b> N≥1</div>
+<ul><li><b>Bad event</b> = ν and μ differ by more than tolerance ε. The inequality bounds its probability.</li>
+<li><b>Good news:</b> negative exponential in N → bigger sample ⇒ tiny probability.</li>
+<li><b>Bad news:</b> exponent has <mark>ε²</mark>. ε=0.1 → 0.01 (weak damping). ε=10⁻⁶ → 10⁻¹², kills any N: bound ≈ 1 (trivial).</li>
+<li>The factor <b>2</b> makes it true (the lecturer prefers it without!).</li>
+<li><mark>Valid for every N and ε</mark> (not asymptotic). One of the <b>laws of large numbers</b>.</li>
+<li><mark>Uniform bound:</mark> right side has no μ although the left probability depends on μ (ν is binomial). So μ unknown is fine.</li>
+<li><b>Trade-off N vs ε:</b> smaller ε (stricter) needs bigger N for same bound. N usually dictated; ε is your taste.</li>
+<li><b>PAC:</b> μ=ν is <i>Probably</i> (probability of violation small) <i>Approximately</i> (within ε) <i>Correct</i>.</li>
+<li><b>Logic:</b> cause is μ → effect ν, but we infer μ from ν. Fine because |ν−μ|&gt;ε is symmetric; only ν is random, μ is a constant.</li></ul>
+<p>Hoeffding is the building block for the VC dimension later.</p>
+<div class="card"><b>🧮 Bound calculator</b><br>N <input id="cn" type="number" value="1000"> ε <input id="ce" type="number" step="0.01" value="0.05"> M <input id="cm" type="number" value="1"><br><span class="big" id="co"></span><br><small>Bound = 2·M·e^(−2ε²N). Values above 1 are trivial. M=1 is plain Hoeffding.</small></div></details>
+
+<details open><summary>4 · From bin to learning</summary>
+<svg viewBox="0 0 640 210" role="img" aria-label="Bin to learning mapping"><rect class="b" x="10" y="20" width="260" height="170" rx="14"/><text x="140" y="45" text-anchor="middle">Bin = input space X</text>
+<circle cx="60" cy="90" r="11" fill="#16a34a"/><circle cx="105" cy="75" r="11" fill="#dc2626"/><circle cx="150" cy="105" r="11" fill="#16a34a"/><circle cx="200" cy="85" r="11" fill="#16a34a"/><circle cx="85" cy="140" r="11" fill="#16a34a"/><circle cx="170" cy="150" r="11" fill="#dc2626"/><circle cx="225" cy="135" r="11" fill="#16a34a"/>
+<text x="140" y="180" text-anchor="middle">each marble = a point x (applicant)</text>
+<text x="300" y="70">🟢 green: h(x) = f(x) (agree)</text><text x="300" y="100">🔴 red: h(x) ≠ f(x) (disagree)</text>
+<text x="300" y="135">μ = fraction red = E_out(h)</text><text x="300" y="160">ν = red in sample = E_in(h)</text><text x="300" y="185">Sample x₁…x_N drawn from P on X</text></svg>
+<p><b>Mapping:</b> bin ↔ input space X; marble ↔ point x; <mark>green = hypothesis got it right, red = wrong</mark>. Colours depend on h <b>and</b> f; f stays unknown, so μ unknown.</p>
+<div class="def"><b>Addition to the learning diagram:</b> a <b>probability distribution P over X</b> generating x₁…x_N <mark>independently</mark>. <ul><li>No assumption on P (any P), and P may be unknown (Hoeffding bounds independent of μ).</li><li><mark>No assumption on f</mark>; promise kept.</li><li>Valid only to the extent the independence/same-P assumption holds.</li><li>P is on X, <b>not</b> on H (H stays a fixed set; a Bayesian view puts a prior on H, discussed at the end of the course).</li></ul></div></details>
+
+<details open><summary>5 · Verification ≠ Learning</summary>
+<p>With <b>one fixed h</b> (e.g. the lecturer improvises weights: salary 2, debt −0.5, years 0.1, threshold 0.5) you can <i>verify</i> how good it is: Hoeffding says E_in(h)≈E_out(h). But you have no control over whether E_in is small; it may be terrible. That is a hypothesis set with <b>one</b> hypothesis.</p>
+<p><b>Real learning:</b> search many hypotheses, pick the one with the smallest E_in ⇒ <mark>multiple bins</mark> h₁…h_M (finite M for now). Different h ⇒ different colouring of the same points; samples differ. Learning = scan the samples for a good (mostly green) one and declare its bin good.</p>
+<div class="def"><b>Notation:</b> ν → <b>E_in(h)</b> (in-sample error), μ → <b>E_out(h)</b> (out-of-sample error; what matters). Both depend on h.<br>Hoeffding: P[ |E_in(h) − E_out(h)| &gt; ε ] ≤ 2e<sup>−2ε²N</sup></div></details>
+
+<details open><summary>6 · The dilemma: why plain Hoeffding fails for many bins</summary>
+<p><b>Coin experiment:</b> flip a coin 5 times; some people get 5 heads — not because the coin is biased. For a fair coin P(10 heads)=½¹⁰≈1/1000. But with <mark>1,000 fair coins</mark>, P(some coin shows 10 heads) ≈ 62%, “more likely than not”. “You tried too hard.”</p>
+<p>Translation: all bins are half red/half green (μ=½, useless hypotheses). Hunting for an all-green sample will find one; reporting it is a mistake. Hoeffding’s guarantee gets <b>diluted</b> by the search.</p>
+<svg viewBox="0 0 640 150" role="img" aria-label="Union bound chain"><g><rect class="b" x="10" y="20" width="190" height="50" rx="10"/><text x="105" y="42" text-anchor="middle">P[ |E_in(g)−E_out(g)|&gt;ε ]</text><text x="105" y="60" text-anchor="middle">(g chosen by search)</text>
+<rect class="b" x="225" y="20" width="200" height="50" rx="10"/><text x="325" y="42" text-anchor="middle">P[ h₁ bad OR h₂ bad</text><text x="325" y="60" text-anchor="middle">OR … OR h_M bad ]</text>
+<rect class="b" x="450" y="20" width="180" height="50" rx="10"/><text x="540" y="42" text-anchor="middle">Σ P[h_m bad]</text><text x="540" y="60" text-anchor="middle">(union bound)</text>
+<path class="l" d="M200 45H223M425 45H448"/><text x="212" y="38">≤</text><text x="437" y="38">≤</text></g>
+<text x="320" y="110" text-anchor="middle">each term ≤ 2e^(−2ε²N) (fixed h ⇒ plain Hoeffding)  ⇒  total ≤ 2M·e^(−2ε²N)</text><text x="320" y="135" text-anchor="middle">g is one of the h’s, so if g is bad, at least one h is bad</text></svg>
+<div class="def"><b>Solution (modified Hoeffding):</b><br>P[ |E_in(g) − E_out(g)| &gt; ε ] ≤ <b>2M·e<sup>−2ε²N</sup></b></div>
+<ul><li><b>Union bound:</b> P(A or B or …) ≤ ΣP. Loose (ignores overlap), <mark>worst case</mark> assumption: events disjoint. Makes no assumptions ⇒ widest applicability.</li><li>Each hypothesis is fixed in advance ⇒ plain Hoeffding applies term by term.</li><li><b>Price: factor M.</b> 10 hypotheses fine; a million and the bound can exceed 1 (“less than 10: thanks, we needed a graduate course”).</li><li><b>Intuition:</b> more complex model (large M) ⇒ E_in tracks E_out more loosely ⇒ memorization, bad generalization (matches lecture 1’s Q&amp;A).</li><li>Perceptron and nearly all real models have <mark>M = ∞</mark> (weights vary continuously) ⇒ bound useless. Next step: replace M by a finite abstract quantity (<b>VC dimension</b>, theory of generalization).</li></ul>
+<p><b>Verdict:</b> learning is feasible <i>in a probabilistic sense</i>: with enough data relative to hypothesis-set size, E_in(g) ≈ E_out(g).</p></details>
+
+<details><summary>7 · Q&amp;A highlights</summary><ul>
+<li><b>Bound &gt; 1 (trivial)?</b> Not enough data for that tolerance (equivalent: tolerance too strict). Like polling 5 people.</li>
+<li><b>M=∞ for perceptron?</b> Yes; handled in a later lecture.</li>
+<li><b>h vs model:</b> h = one function; g = the h you finally pick; model = set H of allowed hypotheses. #hypotheses as complexity is only intuitive; structure of individual hypotheses matters too (later).</li>
+<li><b>How to pick g?</b> Depends on algorithm, model and data (e.g. PLA).</li>
+<li><b>Real-valued outputs:</b> use expected value vs sample average (error frequency is the 0/1 special case); <b>variance</b> of the variable affects the bound.</li>
+<li><b>Why multiple bins?</b> One bin = a hypothesis set with one hypothesis = verification only. Colours change with h.</li>
+<li><b>P on X, not H.</b></li>
+<li><b>Many zero-E_in hypotheses?</b> Same M and E_in ⇒ same bound; the algorithm picks one; SVM later prefers one with better generalization chance.</li>
+<li><b>Does it hold for any g?</b> Yes: g is whatever the whole learning process outputs; union bound covers all h, including ones visited on the way (overkill but valid).</li>
+<li><b>“Does Hoeffding show learning is feasible?”</b> Plain version shows verification; the modified (with M) deals with learning.</li>
+<li><b>Bin = general population</b> (before colouring); sample = people polled.</li>
+<li>Related to p-values/laws of large numbers; the course borrows only this formula.</li></ul></details>
+</section>
+
+<section id="s"><h2>Smart Summary</h2><div class="card"><ul>
+<li><b>Problem:</b> f unknown outside the sample ⇒ certainty impossible, <b>probability</b> possible.</li>
+<li><b>Bin:</b> μ unknown, ν sample fraction, N independent picks.
+<ul><li><b>Hoeffding:</b> P[|ν−μ|&gt;ε] ≤ 2e<sup>−2ε²N</sup>, all N, ε; independent of μ; PAC.</li><li>Trade-off: small ε ⇒ large N.</li></ul></li>
+<li><b>Mapping:</b> marble=x, green = h(x)=f(x), red = disagree; add P on X (any, unknown, independent draws).</li>
+<li><b>Notation:</b> E_in(h)=ν, E_out(h)=μ.</li>
+<li><b>Verification</b> = one fixed h. <b>Learning</b> = choose among M.</li>
+<li><b>Coins:</b> 1000 fair coins ⇒ ~62% chance some has 10 heads: searching inflates luck.</li>
+<li><b>Union bound</b> ⇒ P[|E_in(g)−E_out(g)|&gt;ε] ≤ 2M e<sup>−2ε²N</sup>.</li>
+<li><b>M large (or ∞)</b> ⇒ bound useless ⇒ next: VC dimension.</li></ul></div></section>
+
+<section id="m"><h2>Memory Optimization</h2>
+<div class="card"><h3>Mnemonics</h3>
+<p><b>“Two-M-e”</b>: bound = <b>2·M·e</b>^(−2ε²N): Two, M, e-to-the-minus.</p>
+<p><b>μ = “Mystery” (out/bin), ν = “Visible” (in/sample)</b>: ν looks like “v” for <b>v</b>isible sample.</p>
+<p><b>Green = Good agreement, Red = Rong disagreement.</b></p>
+<p><b>PAC:</b> Probably (small probability) · Approximately (within ε) · Correct.</p></div>
+<div class="card"><h3>Compare</h3><div class="tw"><table><tr><th>Concept</th><th>Single bin</th><th>Multiple bins</th></tr>
+<tr><td>Meaning</td><td>Verification (fixed h)</td><td>Learning (choose g)</td></tr>
+<tr><td>Bound</td><td>2e<sup>−2ε²N</sup></td><td>2M e<sup>−2ε²N</sup></td></tr>
+<tr><td>H size</td><td>1</td><td>M</td></tr>
+<tr><td>Notation</td><td>ν, μ → E_in(h), E_out(h)</td><td>E_in(g), E_out(g)</td></tr></table></div></div>
+<div class="card"><h3>⚠ Traps</h3><ul>
+<li>ν=μ is <b>not</b> claimed; only <b>close with high probability</b>.</li>
+<li>Hoeffding is <b>not</b> asymptotic; holds for every N, ε.</li>
+<li>Forgetting the <b>2</b> or the <b>ε²</b>.</li>
+<li>Applying plain Hoeffding to the chosen g ✗ (needs the M factor).</li>
+<li>Saying P must be known or f must be assumed ✗.</li>
+<li>Putting probability on H ✗ (it’s on X).</li>
+<li>Thinking union bound is tight ✗ (worst case, disjoint events).</li>
+<li>Believing 10 heads from a coin proves bias ✗ (1000 coins).</li>
+<li>Thinking cause/effect reverses the maths: logic only, symmetric inequality.</li></ul></div>
+<div class="card"><h3>Spaced repetition</h3><p>Day 0 read + MCQs · Day 1 re-derive union-bound chain on paper · Day 3 recite mapping bin↔learning · Day 7 written answers · Night before: Revision tab.</p></div></section>
+
+<section id="q"><h2>MCQs <span class="sc" id="sc"></span></h2><p>Click an answer. 🟢 easy · 🟡 medium · 🔴 hard.</p><div id="qs"></div><button id="rs">Reset</button></section>
+<section id="w"><h2>Written Questions</h2><div id="ws"></div></section>
+
+<section id="r"><h2>Rapid Revision · Night-Before Sheet</h2><div class="card">
+<b>Hoeffding:</b> P[|ν−μ|&gt;ε] ≤ 2e^(−2ε²N) · any N, ε · independent of μ · PAC<br>
+<b>Bin ↔ learning:</b> bin=X · marble=x · green: h(x)=f(x) · red: h(x)≠f(x) · μ=E_out(h) · ν=E_in(h) · P on X (any, unknown) · x₁…x_N i.i.d.<br>
+<b>Verification:</b> fixed single h · <b>Learning:</b> choose among M<br>
+<b>Coins:</b> 10 heads: 1/1024; among 1000 coins ≈62%<br>
+<b>Union bound:</b> P(∪A_m) ≤ ΣP(A_m)<br>
+<b>Final:</b> P[|E_in(g)−E_out(g)|&gt;ε] ≤ 2M e^(−2ε²N)<br>
+<b>Meaning:</b> large M ⇒ weak link in/out ⇒ overfit intuition · M=∞ for perceptron ⇒ VC dimension next<br>
+<b>Remember:</b> f unknown (no assumption) · N vs ε trade-off · bound&gt;1 = trivial · 3 criteria: only data essential · g ≠ h ≠ H · SVM: preference among zero-E_in solutions</div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+document.querySelectorAll("header [data-t]").forEach(b=>b.onclick=()=>{document.querySelectorAll("header [data-t]").forEach(x=>x.classList.toggle("on",x==b));document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==b.dataset.t));scrollTo(0,0)});
+$("#th").onclick=()=>{const r=document.documentElement,d=r.dataset.theme?r.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;r.dataset.theme=d?"light":"dark"};
+function calc(){const n=+$("#cn").value,e=+$("#ce").value,m=+$("#cm").value,v=2*m*Math.exp(-2*e*e*n);$("#co").textContent=v>=1?"Bound = "+v.toPrecision(3)+" (≥1 → trivial)":"Bound = "+v.toPrecision(3)}
+["cn","ce","cm"].forEach(i=>$("#"+i).oninput=calc);calc();
+const Q=[
+["🟢","Which criterion for ML is absolutely essential?",["A pattern exists","Cannot be pinned down mathematically","Data","A linear target"],2,"No data ⇒ nothing can be done."],
+["🟢","In the bin experiment μ is:",["Sample fraction","Bin fraction of red (unknown)","Number of marbles","Tolerance"],1,"μ = probability of red in the bin."],
+["🟢","ν denotes:",["Fraction red in the sample","Fraction red in the bin","Sample size","Error bound"],0,"ν is the sample frequency."],
+["🟢","Hoeffding’s bound is:",["e^(−ε²N)","2e^(−2ε²N)","2N e^(−ε)","ε/N"],1,"P[|ν−μ|>ε] ≤ 2e^(−2ε²N)."],
+["🟢","In learning, green marbles mean:",["h(x)≠f(x)","h(x)=f(x)","x in sample","y=+1"],1,"Green = hypothesis agrees with target."],
+["🟢","E_out(h) corresponds to:",["ν","μ","N","ε"],1,"μ ↔ out-of-sample error."],
+["🟡","Which statement is TRUE of Hoeffding?",["Asymptotic only","Valid for every N and ε>0","Needs μ known","Needs f known"],1,"It holds for all N and ε."],
+["🟡","The right-hand side of Hoeffding does not contain μ. This is called:",["Biased bound","Uniform bound","Loose bound","Tight bound"],1,"Bounds the deviation regardless of μ."],
+["🟡","Decreasing ε (stricter tolerance) with the same bound requires:",["Smaller N","Larger N","Same N","Larger μ"],1,"ε and N trade off through ε²N."],
+["🟡","PAC stands for:",["Possibly Almost Certain","Probably Approximately Correct","Predicted And Confirmed","Partly Accurate Classifier"],1,"Probably (small probability), approximately (within ε)."],
+["🟡","The added assumption on the input space is:",["P on H","P on X, any and possibly unknown, independent draws","f is linear","P is uniform"],1,"Only probability on X; no assumption on f."],
+["🟡","Using one fixed hypothesis and checking E_in is:",["Learning","Verification","Overfitting","Clustering"],1,"One bin = verification."],
+["🟡","Why multiple bins?",["To enlarge N","Different h colour the points differently; learning chooses among several h","To remove P","To fix μ"],1,"Colours depend on h."],
+["🟡","Probability that a given fair coin gives 10 heads in 10 flips:",["1/2","≈1/1000","≈1/10","0"],1,"½¹⁰ = 1/1024."],
+["🟡","Among 1,000 fair coins, probability some coin gives 10 heads is:",["≈0.1%","Around 1/2 or more","Exactly 1","0"],1,"≈62%, more likely than not."],
+["🟡","The union bound states:",["P(A∪B) ≥ P(A)+P(B)","P(A or B) ≤ P(A)+P(B)","P(A∩B)=P(A)P(B)","P(A)=1−P(B)"],1,"Sum bounds the union (worst case, no overlap)."],
+["🔴","Modified Hoeffding for the learned g:",["2e^(−2ε²N)","2M e^(−2ε²N)","M e^(−ε²N)","2e^(−2ε²N/M)"],1,"Union bound over M hypotheses."],
+["🔴","Why can’t plain Hoeffding be applied directly to g?",["g is random only through the search over h’s, so it is not a fixed bin","g is linear","N is too small","μ is known"],0,"g is picked from many h’s using the sample."],
+["🔴","Union bound assumption that makes it loose:",["Independence","Events disjoint (worst case)","Equal probabilities","Gaussian errors"],1,"Ignores overlap."],
+["🔴","If bound > 1 it means:",["Probability exceeds 1","Bound is trivial: not enough data for that ε (or M too large)","Hypothesis is perfect","μ=1"],1,"A trivial guarantee."],
+["🔴","Perceptron hypothesis set size M is:",["Finite small","Infinite","Equal to N","1"],1,"Weights vary continuously; next lecture handles it."],
+["🔴","Logic of using ν to infer μ is valid because:",["μ causes ν so it is reversible","|ν−μ|>ε is symmetric","N is large","ν is constant"],1,"Only ν is random; the event is symmetric."],
+["🔴","Why does large M weaken in-sample/out-of-sample link?",["More chances that some h looks good by luck","Hoeffding changes","P changes","f changes"],0,"Like many coins: search finds lucky sample."],
+["🔴","For non-binary outputs, the main technical factor for the bound is:",["Colour of marbles","Variance of the variable","Number of bins","H"],1,"Use expected value vs sample average; variance matters."],
+["🔴","Several hypotheses with zero E_in have (by the Hoeffding bound):",["Different guarantees","The same guarantee (same M, same E_in); SVM later prefers one","No guarantee","Guaranteed E_out=0"],1,"Distinction comes later via SVM."]];
+let sc=0,dn=0;const qs=$("#qs");
+function build(){qs.innerHTML="";sc=dn=0;$("#sc").textContent="";Q.forEach((q,i)=>{const d=document.createElement("div");d.className="card";d.innerHTML=`<b>${i+1}. ${q[0]} ${q[1]}</b>`;q[2].forEach((o,j)=>{const b=document.createElement("button");b.className="opt";b.textContent=String.fromCharCode(65+j)+". "+o;b.onclick=()=>{if(d.dataset.d)return;d.dataset.d=1;dn++;if(j==q[3])sc++;b.classList.add(j==q[3]?"ok":"no");d.querySelectorAll(".opt")[q[3]].classList.add("ok");e.classList.add("show");$("#sc").textContent=`Score ${sc}/${dn} of ${Q.length}`};d.appendChild(b)});const e=document.createElement("div");e.className="ex";e.innerHTML="💡 "+q[4];d.appendChild(e);qs.appendChild(d)})}
+$("#rs").onclick=build;build();
+const W=[
+["Short: State Hoeffding’s inequality and explain each term.","P[|ν−μ|&gt;ε] ≤ 2e^(−2ε²N). ν = sample frequency, μ = unknown bin frequency, ε = tolerance, N = sample size. LHS = probability of a bad event (ν and μ differ by more than ε). Valid for all N≥1, ε&gt;0; bound independent of μ (uniform). Larger N shrinks it; smaller ε weakens it, so there is an N–ε trade-off. It says μ≈ν is probably approximately correct (PAC)."],
+["Short: Why does a set of 1,000 coins show that one-bin Hoeffding fails for learning?","Each fair coin gets 10 heads with probability 1/1024, but among 1,000 coins some coin does with probability ≈62%. Hoeffding bounds each fixed coin, but choosing the best sample after looking at many dilutes the guarantee. Same in learning: searching many hypotheses for the smallest E_in can find a lucky one with E_out bad."],
+["Long: Map the bin experiment to the learning problem and explain what assumption is added.","Bin = input space X; marble = point x; colour by agreement of hypothesis h and target f (green h(x)=f(x), red otherwise). μ = E_out(h) (probability h is wrong), ν = E_in(h) (error on the N sample points). Added: a probability distribution P on X generating x₁…x_N independently. No assumption on P (any, can be unknown) and none on f (still unknown). Result: for a fixed h, Hoeffding gives P[|E_in(h)−E_out(h)|&gt;ε] ≤ 2e^(−2ε²N) — this is verification. Validity holds only to the extent the independence assumption holds."],
+["Long: Derive the bound for the learned hypothesis g and discuss the role of M.","P[|E_in(g)−E_out(g)|&gt;ε] ≤ P[|E_in(h₁)−E_out(h₁)|&gt;ε or … or |E_in(h_M)−E_out(h_M)|&gt;ε] because g is one of the h_m (if g is bad, some h_m is bad). Union bound: ≤ Σ_m P[|E_in(h_m)−E_out(h_m)|&gt;ε]. Each h_m is fixed in advance so Hoeffding applies: each ≤ 2e^(−2ε²N). Therefore ≤ 2M e^(−2ε²N). M penalises complex models: for large M the bound exceeds 1 and is trivial, matching the intuition that complex models memorise in-sample; for infinite M (perceptron) need a finite replacement (VC dimension)."],
+["Long: Is learning feasible? Discuss verification vs learning and the probabilistic sense of feasibility.","Certainty is impossible: f is unknown outside the sample and can take any value. But probabilistically, a large enough sample makes E_in close to E_out (Hoeffding, poll analogy). For one fixed h this is only verification: E_in may still be large. Learning picks g from H by small E_in; with the union bound, if 2M e^(−2ε²N) is small (enough data for the size of H) then E_out(g)≈E_in(g), so a small E_in implies small E_out: learning is feasible in this probabilistic sense. Limits: needs independent samples from a fixed P, finite M here; infinite M needs the next lecture’s theory."]];
+$("#ws").innerHTML=W.map((w,i)=>`<details><summary>${i+1}. ${w[0]}</summary><div class="def">${w[1]}</div></details>`).join("");
+</script></body></html>
