@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Learning From Data · Lecture 3: The Linear Model I — Exam Prep</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1b2330;--mu:#5d6878;--ac:#3b6cf6;--ok:#12805c;--bad:#c23a3a;--hl:#fff3b8;--bd:#e1e5ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141b;--card:#181e28;--tx:#e6eaf2;--mu:#9aa6b8;--ac:#7c9cff;--ok:#43c79a;--bad:#ff7b7b;--hl:#5a4a00;--bd:#2a3342;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10141b;--card:#181e28;--tx:#e6eaf2;--mu:#9aa6b8;--ac:#7c9cff;--ok:#43c79a;--bad:#ff7b7b;--hl:#5a4a00;--bd:#2a3342;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--bd);z-index:9;padding:10px 16px}
+.row{max-width:900px;margin:auto;display:flex;gap:8px;align-items:center}
+h1{font-size:1.05rem;margin:0;flex:1}
+nav{display:flex;gap:6px;overflow-x:auto;max-width:900px;margin:8px auto 0;padding-bottom:2px}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:999px;padding:6px 14px;white-space:nowrap;transition:.2s}
+button:hover{border-color:var(--ac)}button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:900px;margin:auto;padding:18px 16px 60px}
+section{display:none;animation:f .35s}section.on{display:block}@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+details{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin:10px 0;padding:4px 16px}
+summary{cursor:pointer;font-weight:600;padding:10px 0}details[open]>summary{color:var(--ac)}
+h2{margin:6px 0 12px}h3{margin:14px 0 4px}
+mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:3px}
+.box{background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:10px;padding:10px 14px;margin:10px 0}
+.warn{border-left-color:var(--bad)}.tip{border-left-color:var(--ok)}
+.f{font-family:ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px;background:var(--card)}th,td{border:1px solid var(--bd);padding:8px;text-align:left;vertical-align:top;font-size:.93rem}th{background:var(--bg)}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 16px;margin:12px 0}
+.o{display:block;width:100%;text-align:left;border-radius:10px;margin:6px 0;white-space:normal}
+.o.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.o.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+.ex{display:none;margin-top:8px;color:var(--mu)}.ex.show{display:block}
+.tag{font-size:.75rem;color:var(--mu)}#sc{font-weight:700;color:var(--ac)}
+ul{padding-left:20px}
+</style></head><body>
+<header><div class="row"><h1>📐 Lecture 3 · The Linear Model I</h1><button id="th" aria-label="Toggle theme">🌓</button></div>
+<nav id="nav"></nav></header>
+<main>
+<section id="explain"></section><section id="summary"></section><section id="memory"></section><section id="mcq"></section><section id="written"></section><section id="rev"></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const tabs=[['explain','Explanation'],['summary','Summary'],['memory','Memory'],['mcq','MCQs'],['written','Written'],['rev','Revision']];
+const nav=$('#nav');
+tabs.forEach(([id,t])=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>show(id);b.dataset.id=id;nav.appendChild(b)});
+function show(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===id));nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));window.scrollTo({top:0,behavior:'smooth'});try{localStorage.setItem('l3tab',id)}catch(e){}}
+$('#th').onclick=()=>{const r=document.documentElement;const d=getComputedStyle(r).getPropertyValue('--bg').trim()==='#10141b';r.dataset.theme=d?'light':'dark'};
+const D=(t,h,o)=>`<details${o?' open':''}><summary>${t}</summary>${h}</details>`;
+
+$('#explain').innerHTML='<h2>Deep Explanation</h2>'+
+D('0. Recap of Lecture 2 (feasibility of learning)',`<ul><li>Learning is feasible <mark>only in a probabilistic sense</mark>: modeled with a <b>bin</b>; E_out is the unknown bin proportion, E_in the sample.</li>
+<li><b>Hoeffding:</b> P[|E_in − E_out| &gt; ε] is a small number, a <mark>negative exponential in N</mark>: bigger sample → more reliable.</li>
+<li>This covers a <b>single bin = single hypothesis</b>. With a finite set H₁…H_M, “bad” events can <mark>accumulate</mark>. g (the final hypothesis) is one of them, so if g is bad, <i>at least one</i> h is bad.</li>
+<li><b>Union bound:</b> P(A or B or …) ≤ sum of probabilities. Works <mark>regardless of correlation</mark> (worst case = no overlap). Result: bound × <b>M</b>. Larger H → larger M → bound becomes meaningless (and M = ∞ for linear models). The theory of generalization (next weeks) fixes this.</li></ul>
+<div class="f">P[ |E_in(g) − E_out(g)| &gt; ε ] ≤ 2M e^(−2ε²N)</div>`)+
+D('1. Lecture plan (out of sequence, practical first)',`<p>Linear models are among the most important in ML. Sequence: (1) perceptron → <b>non-separable data</b> (pocket); (2) <b>real-valued</b> targets → <b>linear regression</b>; (3) <b>nonlinear transformation</b>, which stays inside linear models. Always test ideas on <mark>real data</mark>, not just toy data.</p>`,1)+
+D('2. The data: zip-code digits and input representation',`<ul><li>Postal zip codes → individual digits → <mark>16×16 gray-level pixels</mark>. Humans make about <mark>2.5% error</mark>; goal: match or beat it.</li>
+<li><b>Raw input:</b> 256 real numbers x₁…x₂₅₆ plus the constant <b>x₀ = 1</b> (threshold) → <mark>257 parameters</mark>. Too many → bad for generalization.</li>
+<li><b>Features</b> = higher-level representation of raw input (extract useful information):
+<ul><li><b>Intensity</b> (average pixel darkness): a 1 has little ink, an 8 a lot, a 5 some.</li><li><b>Symmetry:</b> take the difference between the image and its flipped version; symmetric → small difference. Symmetry = −(asymmetry).</li></ul></li>
+<li>Now x₁ = intensity, x₂ = symmetry → <mark>3 dimensions (x₀, x₁, x₂), 3 weights w₀, w₁, w₂</mark> instead of 257. Information is lost, but about as much irrelevant as relevant.</li>
+<li><b>Scatter plot (1 vs 5):</b> 5s (red) have higher intensity (more right); 1s (blue) are more symmetric (higher up). Almost, but not quite, linearly separable; some examples (a weird “5”) are simply undoable → accept a small non-zero error.</li></ul>`)+
+D('3. PLA on non-separable data → the pocket algorithm',`<ul><li>PLA only sees E_in (E_out is unknown, plotted just for illustration). It fixes <b>one point at a time</b> and may mess up others, so E_in goes up and down and <mark>never converges</mark> on non-separable data; it can go from good to bad in one step.</li>
+<li>Fix: <b>force termination</b> (e.g. 1000 iterations) and take the last weights as g. The result may be “too deep into the blue region”. E_out still <mark>tracks E_in</mark> (with a gap ε) because there are few parameters → generalizes.</li>
+<li><b>Pocket algorithm:</b> run PLA as usual, but <mark>keep in your pocket the weights with the best E_in so far</mark>; replace the pocket only when a better one appears; report the pocket at the end. The simplest possible modification; the boundary looks much better.</li></ul>
+<div class="box tip">PLA = last weights. Pocket = best weights seen.</div>`)+
+D('4. Linear regression: the problem',`<ul><li><b>Regression</b> = just means <mark>real-valued output</mark> (historical term from statistics, no other connotation). Used heavily in statistics, economics, ML.</li>
+<li><b>Example 1:</b> relate GPA in course groups (math, science, engineering, humanities, PE, other) to income 10 years later; the data tells what matters.</li>
+<li><b>Example 2 (main): credit line.</b> Classification: approve yes/no (±1). Regression: <mark>how much credit</mark> ($800, $1,200, $30,000…). Inputs: age, salary, years in residence, etc.</li>
+<li><b>Data:</b> (xₙ, yₙ) from past customers where y is the credit line given by credit officers; goal is to <mark>replicate what the experts do</mark> (officers are inconsistent), not to track credit behavior.</li></ul>
+<div class="f">h(x) = Σᵢ₌₀ᵈ wᵢxᵢ = wᵀx</div>
+<p>It’s <b>regression</b> because the output is real; <b>linear</b> because of the linear form. Compared to classification: <mark>don’t take the sign</mark>; the signal itself is the output (dollars). The signal wᵀx is what makes all linear models linear: leave as is (regression), hard threshold (classification), or soft threshold (probability, later).</p>`)+
+D('5. The error measure: squared error',`<ul><li>Classification: binary error (right/wrong) → frequency/probability of error. Regression: need <mark>how bad</mark>: predicting 900 for a true 1000 is fine, 5000 is bad.</li>
+<li><b>Squared error:</b> (h(x) − y)². Standard for linear regression; its merit is the <mark>simplicity of the analytic solution</mark>, not inherent superiority (error measures discussed principled next lecture).</li>
+<li><b>E_in</b> = average of squared errors over the N examples. <b>E_out</b> = <mark>expected value</mark> of the squared error. (For binary error: E_in = frequency of mistakes, E_out = probability of mistake; both are average / expected value of the binary error measure.)</li>
+<li>Geometry: 1-D → fit a <b>line</b> (w₀ = threshold/intercept, w₁ = slope); the vertical bars are errors; E_in = sum of squared bar lengths. 2-D → a <b>plane</b>. In general → a <mark>hyperplane</mark> (one dimension less than the space).</li></ul>`)+
+D('6. Matrix form',`<ul><li><b>X</b> (N × (d+1)): row n = (1, xₙ₁ … xₙ_d). <b>y</b> (N × 1) = targets. X is <mark>tall</mark> (few parameters, thousands of examples).</li></ul>
+<div class="f">E_in(w) = (1/N) ‖Xw − y‖²</div>
+<p>Norm squared = vector transposed times itself → sums the contributions of every component. Shorthand for the summation.</p>`)+
+D('7. Minimizing E_in: gradient = 0 → pseudo-inverse',`<ul><li>X and y are <b>constants</b> (the data); the variable is <b>w</b>. Minimize w.r.t. w: set the <mark>gradient</mark> (vector of partial derivatives, “glorified derivative”) to a vector of zeros.</li></ul>
+<div class="f">∇E_in(w) = (2/N) Xᵀ(Xw − y) = 0</div>
+<div class="f">XᵀXw = Xᵀy</div>
+<div class="f">w = (XᵀX)⁻¹Xᵀy = X†y</div>
+<ul><li>Like calculus of a simple square: the 2 comes out, the transpose appears because it’s “the transpose times itself”. You can verify with scalar partials (hairy) and get the same result.</li>
+<li><mark>X is tall, not square, hence not invertible</mark>, but <b>XᵀX is a small (d+1)×(d+1) square matrix</b>, almost surely invertible.</li>
+<li><b>X† = (XᵀX)⁻¹Xᵀ</b> = <mark>pseudo-inverse</mark> (“X dagger”). Property: <b>X†X = I</b> (inverse of sorts), but XX† ≠ I (gives an interesting matrix, later).</li>
+<li>If X were square (as many examples as parameters) → w = X⁻¹y and error 0. With tall X, we get the <b>minimum</b>, not zero.</li></ul>`)+
+D('8. Computation and the algorithm',`<ul><li>Cost: Xᵀ is (d+1)×N, X is N×(d+1) → product is (d+1)×(d+1): <mark>only 3×3</mark> in the digit problem (257×257 with raw pixels). Inverting small matrices is easy; accumulating over the N examples is the heavy part, and it is simple. Packages exist; you rarely code it yourself.</li>
+<li>Final shape: X† is (d+1)×N times y (N×1) = w ((d+1)×1) ✔.</li></ul>
+<div class="box"><b>Algorithm (one-step learning):</b> 1) Build X and y from the data. 2) Compute X† = (XᵀX)⁻¹Xᵀ. 3) Return w = X†y. Done.</div>
+<ul><li>Looks like “cheating” vs PLA’s iterations, but if it gives a good E_out, <mark>it is learning</mark>. Popular, and a building block for fancier methods.</li>
+<li><b>Invertibility:</b> almost certain in practice (few columns, thousands of rows; you’d have to be extremely unlucky for columns to be dependent). If XᵀX isn’t invertible, a pseudo-inverse still exists but is not unique; not a practical concern.</li></ul>`)+
+D('9. Linear regression for classification',`<ul><li>Binary labels ±1 are also real numbers, so linear regression can fit them: find w such that wᵀxₙ ≈ yₙ = ±1 <mark>in the mean-squared sense</mark>. Then classify with <b>sign(wᵀx)</b>. Near +1 → likely positive; near −1 → likely negative. Almost free: one-step learning.</li>
+<li><b>Catch:</b> regression tries hard to make every −1 point exactly −1; points far on the correct side (−8) count as errors, so it may drag the boundary into the wrong region just to reduce numerical error. Signal can be +7 or −7 while only the sign matters.</li>
+<li><b>Best use:</b> use the linear regression weights as <mark>initial weights for PLA/pocket</mark> (a jump start, since PLA from random weights is slow); let pocket refine the classification.</li>
+<li>±1 vs other symmetric values (±c): only a matter of scale; asymmetric values are absorbed in the threshold.</li></ul>`)+
+D('10. Nonlinear transformation',`<ul><li>Real data can be far from linearly separable (e.g. blues near the center, reds on the periphery: a <b>circle</b> would work, but is not linear).</li>
+<li><b>Nonlinear features of the credit data:</b> years in residence is not linear in effect (stability after ~5 years, diminishing returns). Use indicator features <b>[x &lt; 1]</b> and <b>[x &gt; 5]</b> (returns 1 if true, 0 if false).</li>
+<li><b>Key question: linear in what?</b> The hypothesis is linear in x, but <mark>more importantly linear in w</mark>. In learning the roles reverse: the x’s are <b>constants</b> (dictated by training set), the weights are the variables. The derivations of PLA and linear regression only needed <mark>linearity in w</mark>, never any property of x.</li>
+<li>So transform constants into other constants: <b>z = Φ(x) = (1, x₁², x₂²)</b> (distance from origin). In Z-space the red points (far) have larger z₁, z₂ and the blue ones smaller → a <mark>line separates them</mark> (perceptron or regression works).</li>
+<li>To classify a new point: transform it the same way, classify in Z-space, report. No computational limit on how elaborate Φ can be.</li>
+<li><div class="box warn" style="margin:6px 0">There is a <b>big catch</b>: the more elaborate the transform, the more parameters → <b>generalization</b> suffers. Guidelines come after the generalization theory (next lecture continues).</div></li></ul>`)+
+D('11. Q&amp;A highlights (often tested)',`<ul><li><b>Why w₀ (threshold)?</b> Without it the line must pass through the origin; the offset needs the constant.</li>
+<li><b>Features:</b> no general algorithm; study the problem/raw input. Fewer than a dozen features is usually fine. Looking at the data to derive features has a generalization cost (explained later). A <b>feature</b> = any higher-level representation of raw input; features of features are features too; the feature space is called <b>Z</b>.</li>
+<li><b>Independence</b> (for the generalization bound) is between <i>different input points</i>, not coordinates of the same input; transforming each point preserves it.</li>
+<li><b>Linear model = building block:</b> soft-threshold linear units stacked → <b>neural networks</b>; principled separating boundary → <b>SVM</b>; efficient nonlinear transforms → <b>kernel methods</b>.</li>
+<li><b>E_in vs E_out:</b> we can only evaluate E_in; rely on theory that E_in tracks E_out.</li>
+<li><b>Polynomial fitting</b> is still linear regression after transforming x → x, x², x³, … (line in Z = polynomial in X).</li>
+<li><b>Least squares vs maximum likelihood:</b> related under Gaussian-noise assumptions; this course avoids those assumptions to stay general.</li>
+<li><b>More transforms:</b> polynomial, <b>radial basis functions</b> (later).</li>
+<li><b>Continuous vs discrete outputs:</b> dictated by the problem. Regression (analytic) is easier than classification (combinatorial optimization).</li>
+<li>Pseudo-random generator: philosophically learnable, practically looks random.</li></ul>`);
+
+$('#summary').innerHTML='<h2>Smart Summary</h2><div class="box"><ul>'+[
+'<b>Recap:</b> Hoeffding (e^−N) for one h · union bound × M for finite H · M=∞ needs theory',
+'<b>Digits:</b> 16×16 pixels, humans ≈ 2.5% error · raw 257 params → <mark>features: intensity, symmetry → 3 params</mark>',
+'<b>PLA</b> on non-separable data: never converges → stop at 1000, last weights',
+'<b>Pocket:</b> keep best E_in so far, report it',
+'<b>Regression</b> = real-valued output · h(x)=wᵀx (no sign) · credit line example',
+'<b>Squared error</b> · E_in = average · E_out = expected value',
+'<b>X</b> = N×(d+1) tall · <b>E_in = (1/N)‖Xw−y‖²</b>',
+'∇E_in=0 → XᵀXw=Xᵀy → <mark>w = X†y</mark>, X†=(XᵀX)⁻¹Xᵀ, X†X=I',
+'<b>One-step learning</b>; XᵀXis small (3×3) and almost surely invertible',
+'<b>LR for classification:</b> sign(wᵀx) · caveat: far-correct points counted as errors · use as <mark>pocket initialization</mark>',
+'<b>Nonlinear transform:</b> linear in <b>w</b>, not x · z = (1, x₁², x₂²) · big catch: generalization',
+'<b>Q&amp;A:</b> w₀ needed for offset · features = any higher-level representation · linear models → NN, SVM, kernels'
+].map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+
+$('#memory').innerHTML='<h2>Memory Optimization</h2>'+
+D('Mnemonics',`<div class="box tip"><b>PLA vs Pocket:</b> PLA = “<b>L</b>ast weights”; Pocket = “<b>P</b>ut the best in my Pocket”.</div>
+<div class="box tip"><b>Regression recipe “B-P-W”:</b> <b>B</b>uild X,y → compute <b>P</b>seudo-inverse → return <b>W</b> = X†y.</div>
+<div class="box tip"><b>Shapes “Tall X, tiny XᵀX”:</b> X: N×(d+1) · XᵀX: (d+1)×(d+1).</div>
+<div class="box tip"><b>“Linear in w, not x”</b> → so x² is allowed.</div>
+<div class="box tip"><b>Features:</b> Intensity (how much ink) + Symmetry (flip &amp; compare).</div>`,1)+
+D('Comparison tables',`<div class="tw"><table><tr><th></th><th>PLA</th><th>Pocket</th><th>Linear regression</th></tr>
+<tr><th>Output</th><td>±1</td><td>±1</td><td>real number</td></tr><tr><th>Non-separable data</th><td>never converges</td><td>works (best so far)</td><td>works, one step</td></tr><tr><th>Method</th><td>iterative, one point at a time</td><td>PLA + keep best</td><td>closed form X†y</td></tr></table></div>
+<div class="tw"><table><tr><th></th><th>Classification</th><th>Regression</th></tr><tr><th>Credit example</th><td>Approve? ±1</td><td>Credit line $</td></tr><tr><th>Error</th><td>Binary (frequency/probability)</td><td>Squared</td></tr></table></div>`)+
+D('Common mistakes &amp; traps',`<div class="box warn"><ul><li>Pocket ≠ PLA with a better rule: the <b>update rule is the same</b>; only the reported weights differ.</li><li>“X is invertible” is false: only <b>XᵀX</b> is.</li><li>X†X = I but XX† ≠ I.</li><li>Linear in x vs <b>linear in w</b>.</li><li>Regression for classification can be hurt by far-away correct points; use as initialization.</li><li>Features are not free: too many hurts generalization; deriving them from the data has a cost.</li><li>E_out is never computed in practice, only illustrated.</li><li>Union bound holds <b>regardless of independence</b>.</li></ul></div>`)+
+D('Spaced repetition plan',`<div class="box">Day 0 read → Day 1 MCQs → Day 3 re-derive w = X†y and redo misses → Day 7 revision sheet → night before: sheet only. Chunks: (1) recap, (2) features and pocket, (3) regression setup, (4) derivation, (5) classification with LR, (6) nonlinear transform + Q&amp;A.</div>`);
+
+const M=[
+['Hoeffding’s bound shrinks as:',['M grows','N grows (exponentially)','ε shrinks to 0','H grows'],1,'The bound is a negative exponential in N.'],
+['Why does the union bound apply regardless of correlation?',['It assumes independence','It uses the worst case where events don’t overlap','It only works for coins','It ignores M'],1,'P(A∪B…) ≤ ΣP; overlap only makes it smaller.'],
+['The bound for a finite hypothesis set carries an extra factor of:',['N','ε','M','2'],2,'Factor M (number of hypotheses).'],
+['Humans reading zip-code digits make about what error?',['0%','2.5%','10%','25%'],1,'Goal: match or beat ≈2.5%.'],
+['A 16×16 image gives raw input of how many parameters (with x₀)?',['3','16','256','257'],3,'256 pixels + x₀.'],
+['The two features used for digits:',['Width and height','Intensity and symmetry','Color and size','Edges and corners'],1,'Average intensity and symmetry.'],
+['After feature extraction, the number of weights is:',['2','3','256','257'],1,'w₀, w₁, w₂.'],
+['Which digit typically has higher intensity, 1 or 5?',['1','5','Same','Depends on font'],1,'The 5 has more black pixels.'],
+['PLA on non-separable data:',['Converges quickly','Never converges','Always finds zero error','Needs no iterations'],1,'It keeps flipping; must be forced to stop.'],
+['Pocket algorithm reports:',['The last weights','The weights with best E_in seen','Random weights','The first weights'],1,'Best-so-far kept in the “pocket”.'],
+['What changes in pocket vs PLA?',['The update rule','Which weights are kept/reported','The data','The error measure'],1,'The updates are identical.'],
+['“Regression” means:',['Going backwards','Real-valued output','Linear boundary','Binary output'],1,'It is a historical term for real-valued targets.'],
+['In credit-line regression, the output is:',['±1','A dollar amount','A probability','A class index'],1,'Real-valued credit limit.'],
+['Regression hypothesis vs classification hypothesis:',['Regression adds sign()','Regression doesn’t take the sign','Both are the same','Regression has no weights'],1,'h(x)=wᵀx without thresholding.'],
+['The regression error measure is:',['Binary error','Squared error','Absolute error','Cross-entropy'],1,'Standard for linear regression here.'],
+['Why squared error here, according to the lecture?',['It is the only valid measure','Simplicity of the analytic solution','It’s always best','It ignores outliers'],1,'Merit is the analytic simplicity; principled choice later.'],
+['E_out for squared error is:',['The sample average','The expected value of the squared error','Always zero','The same as E_in'],1,'Expected value, not average.'],
+['In general dimensions, the linear regression “line” is a:',['Curve','Hyperplane','Point','Circle'],1,'One dimension less than the space.'],
+['The shape of X is:',['(d+1) × N','N × (d+1)','N × N','d × d'],1,'Tall: N rows, d+1 columns.'],
+['E_in(w) in matrix form:',['(1/N)‖Xw − y‖²','Xw','XᵀXy','(1/N)‖w‖'],0,'Norm squared of the residual vector.'],
+['The gradient condition leads to:',['Xw = y','XᵀXw = Xᵀy','wX = Xy','X = y'],1,'Set (2/N)Xᵀ(Xw − y) = 0.'],
+['The pseudo-inverse is:',['(XᵀX)⁻¹Xᵀ','XᵀX','X⁻¹','Xᵀ'],0,'X†.'],
+['Which matrix is square and (almost surely) invertible?',['X','y','XᵀX','Xw'],2,'(d+1)×(d+1).'],
+['Which identity holds?',['XX† = I','X†X = I','X† = X','X†X = 0'],1,'The other direction does not give I.'],
+['In the digits problem XᵀX is:',['257×257','3×3','N×N','2×2'],1,'d+1 = 3.'],
+['Linear regression is called “one-step learning” because:',['It uses one example','w = X†y is computed in one shot','It has one feature','It stops at iteration 1'],1,'Closed-form solution.'],
+['XᵀX not invertible in practice is:',['Common','Very unlikely (few columns, many rows)','Impossible','Always the case'],1,'Dependent columns would be extremely unlucky.'],
+['Using linear regression for classification, predict with:',['wᵀx','sign(wᵀx)','|wᵀx|','1/wᵀx'],1,'Take the sign.'],
+['Main weakness of regression for classification:',['Needs labels','Tries to hit ±1 numerically, penalizing far-correct points','Cannot handle N large','Has no solution'],1,'Boundary can be dragged into the wrong place.'],
+['Best way to use regression for classification:',['As the final answer','As initial weights for pocket/PLA','Never','Only with N=1'],1,'Jump start for the iterative algorithm.'],
+['“Linear” in linear models most importantly means linear in:',['x','w','N','y'],1,'Derivations only needed linearity in w.'],
+['Transform for the circular data:',['z=(1,x₁,x₂)','z=(1,x₁²,x₂²)','z=x₁+x₂','z=sin x'],1,'Distance from the origin.'],
+['The “big catch” of nonlinear transforms is:',['Computation cost','Generalization','No solutions','Needs more labels only'],1,'More parameters hurt generalization.'],
+['Stacked soft-threshold linear units give:',['SVM','Neural network','Kernel method','Pocket'],1,'From the Q&A.'],
+['The indicator [x &lt; 1] returns:',['x','1 if true, 0 if false','−1','Always 1'],1,'Bracket notation.'],
+['Why is w₀ needed?',['Look nicer','Otherwise the line must pass through the origin','Reduce N','Normalize y'],1,'Offset/threshold.'],
+['Fitting a polynomial is:',['Impossible with linear models','Linear regression after transforming x to x, x², x³…','A different course','Only PLA'],1,'Line in Z-space = polynomial in X-space.']
+];
+let score=0,done=0;
+$('#mcq').innerHTML='<h2>MCQs <span class="tag">(tap an answer)</span></h2><p>Score: <span id="sc">0/0</span> of '+M.length+' <button onclick="location.reload()">Reset</button></p><div id="ml"></div>';
+M.forEach((m,i)=>{const d=document.createElement('div');d.className='q';
+d.innerHTML=`<div class="tag">Q${i+1} · ${i<12?'Easy':i<28?'Medium':'Hard'}</div><b>${m[0]}</b>`;
+const ex=document.createElement('div');ex.className='ex';ex.textContent='✔ '+m[3];
+m[1].forEach((o,j)=>{const b=document.createElement('button');b.className='o';b.textContent=String.fromCharCode(65+j)+'. '+o;
+b.onclick=()=>{if(d.dataset.d)return;d.dataset.d=1;done++;if(j===m[2])score++;b.classList.add(j===m[2]?'ok':'no');d.querySelectorAll('.o')[m[2]].classList.add('ok');ex.classList.add('show');$('#sc').textContent=score+'/'+done};d.appendChild(b)});
+d.appendChild(ex);$('#ml').appendChild(d)});
+
+const W=[
+['Short: Why is the union bound used for a finite hypothesis set, and what is its limitation?','g is one of H₁…H_M, so if g generalizes badly, at least one hypothesis does. The union bound says P(any bad event) ≤ sum of their probabilities, regardless of correlation. It gives the Hoeffding bound times M. Limitation: a larger H increases M, making the bound meaningless, especially for infinite H like linear models; the theory of generalization addresses this.'],
+['Short: Why extract features from digit images, and what features were used?','Raw input has 256 pixels (257 parameters with x₀), which hurts generalization. Intensity (average darkness) and symmetry (difference from the flipped image, negated) reduce the input to 3 dimensions and 3 weights, losing roughly as much irrelevant as relevant information.'],
+['Short: Explain the pocket algorithm and why it’s needed.','On non-separable data PLA never converges, since fixing one point may break others. Pocket runs the same PLA updates but tracks E_in for each intermediate hypothesis and keeps the best weights in the “pocket”, reporting them at termination (e.g. 1000 iterations). The final boundary is better than just taking the last weights.'],
+['Short: Why do we need w₀ in linear regression?','Without the constant x₀ = 1 and its weight w₀, the fitted line/hyperplane must pass through the origin. The offset (threshold) in the data is compensated by w₀, giving a proper model.'],
+['Long: Derive the linear regression solution and explain the pseudo-inverse.','Define X (N×(d+1)) and y (N×1). E_in(w) = (1/N)‖Xw − y‖². X and y are constants; minimize over w by setting the gradient to zero: (2/N)Xᵀ(Xw − y) = 0, so XᵀXw = Xᵀy. X is tall and not invertible, but XᵀX is a small square matrix, almost surely invertible, so w = (XᵀX)⁻¹Xᵀy = X†y. X† is the pseudo-inverse; X†X = I but XX† ≠ I. If X were square, w = X⁻¹y with zero error; for tall X we get the minimum. The algorithm: build X and y, compute X†, return X†y (one-step learning). The inverted matrix is only (d+1)×(d+1).'],
+['Long: How can linear regression be used for classification? What are the pros and cons?','Treat ±1 labels as real targets, fit w by least squares, and classify with sign(wᵀx). Pros: nearly free, one-step, gives a reasonable boundary. Cons: it tries to make each output numerically ±1, so points far on the correct side contribute errors and can drag the boundary into the wrong region. Best use: take the regression weights as initial weights for the pocket algorithm (or PLA), which then optimizes classification error directly, giving a jump start over random initialization.'],
+['Long: Explain nonlinear transformation and why it stays within linear models.','Linear regression and PLA derivations only require linearity in the weights w; the inputs x are constants from the training set. So we can transform x into z = Φ(x) (e.g. (1, x₁², x₂²) for circular data) and apply linear methods in Z-space, where a line separates the classes. New points are transformed the same way before classification. Examples: indicator features [x<1], [x>5] for years in residence; polynomial fits via x, x², x³. Catch: elaborate transforms add parameters and hurt generalization, to be treated with the theory of generalization.']
+];
+$('#written').innerHTML='<h2>Written Questions &amp; Model Answers</h2>'+W.map((w,i)=>D(`${i+1}. ${w[0]}`,`<div class="box tip"><b>Model answer:</b> ${w[1]}</div>`)).join('');
+
+$('#rev').innerHTML=`<h2>⚡ Revision Sheet · Night Before</h2>
+<div class="box"><b>Recap:</b> Hoeffding ~ e^(−2ε²N) per h · union bound → ×M · infinite H → need theory.</div>
+<div class="box"><b>Digits:</b> 256 px (+x₀=257) → intensity, symmetry → 3 weights · humans ≈2.5% error.</div>
+<div class="box"><b>PLA</b> never converges on non-separable data · <b>Pocket</b> = keep best E_in.</div>
+<div class="box"><b>Regression</b> = real output · h = wᵀx · squared error · E_out = expected value.</div>
+<div class="f">E_in(w) = (1/N)‖Xw − y‖²</div>
+<div class="f">∇E_in = (2/N)Xᵀ(Xw − y) = 0 ⇒ XᵀXw = Xᵀy ⇒ w = X†y</div>
+<div class="f">X† = (XᵀX)⁻¹Xᵀ · X†X = I · XᵀX is (d+1)×(d+1)</div>
+<div class="box"><b>LR for classification:</b> sign(wᵀx), then use as pocket initialization.</div>
+<div class="box"><b>Nonlinear:</b> z = Φ(x) = (1, x₁², x₂²) · linear in w · catch = generalization.</div>
+<div class="box"><b>Q&amp;A:</b> w₀ = offset · feature = higher-level representation · linear model → NN, SVM, kernels · polynomial fit = transform + linear.</div>
+<div class="box warn"><b>Traps:</b> X not invertible, XᵀX is · pocket changes what’s reported, not updates · linear in w, not x.</div>`;
+let t='explain';try{t=localStorage.getItem('l3tab')||t}catch(e){}
+show(t);
+</script></body></html>

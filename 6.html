@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ML · Linear Regression &amp; Linear Models — Exam Prep</title>
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#1b2330;--mu:#5d6878;--ac:#3b6cf6;--ok:#12805c;--bad:#c23a3a;--hl:#fff3b8;--bd:#e1e5ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10141b;--card:#181e28;--tx:#e6eaf2;--mu:#9aa6b8;--ac:#7c9cff;--ok:#43c79a;--bad:#ff7b7b;--hl:#5a4a00;--bd:#2a3342;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10141b;--card:#181e28;--tx:#e6eaf2;--mu:#9aa6b8;--ac:#7c9cff;--ok:#43c79a;--bad:#ff7b7b;--hl:#5a4a00;--bd:#2a3342;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--card);z-index:10}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--card);border-bottom:1px solid var(--bd);z-index:9;padding:10px 16px}
+.row{max-width:900px;margin:auto;display:flex;gap:8px;align-items:center}
+h1{font-size:1.05rem;margin:0;flex:1}
+nav{display:flex;gap:6px;overflow-x:auto;max-width:900px;margin:8px auto 0;padding-bottom:2px}
+button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:999px;padding:6px 14px;white-space:nowrap;transition:.2s}
+button:hover{border-color:var(--ac)}button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:900px;margin:auto;padding:18px 16px 60px}
+section{display:none;animation:f .35s}section.on{display:block}@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+details{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin:10px 0;padding:4px 16px}
+summary{cursor:pointer;font-weight:600;padding:10px 0}details[open]>summary{color:var(--ac)}
+h2{margin:6px 0 12px}h3{margin:14px 0 4px}
+mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:3px}
+.box{background:var(--card);border:1px solid var(--bd);border-left:4px solid var(--ac);border-radius:10px;padding:10px 14px;margin:10px 0}
+.warn{border-left-color:var(--bad)}.tip{border-left-color:var(--ok)}
+.f{font-family:ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px 12px;margin:8px 0;overflow-x:auto;white-space:nowrap}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px;background:var(--card)}th,td{border:1px solid var(--bd);padding:8px;text-align:left;vertical-align:top;font-size:.93rem}th{background:var(--bg)}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px 16px;margin:12px 0}
+.o{display:block;width:100%;text-align:left;border-radius:10px;margin:6px 0;white-space:normal}
+.o.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.o.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+.ex{display:none;margin-top:8px;color:var(--mu)}.ex.show{display:block}
+.tag{font-size:.75rem;color:var(--mu)}#sc{font-weight:700;color:var(--ac)}
+ul{padding-left:20px}
+</style></head><body>
+<header><div class="row"><h1>📈 ML · Linear Regression &amp; Linear Models</h1><button id="th" aria-label="Toggle theme">🌓</button></div>
+<nav id="nav"></nav></header>
+<main>
+<section id="explain"></section><section id="summary"></section><section id="memory"></section><section id="mcq"></section><section id="written"></section><section id="rev"></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const tabs=[['explain','Explanation'],['summary','Summary'],['memory','Memory'],['mcq','MCQs'],['written','Written'],['rev','Revision']];
+const nav=$('#nav');
+tabs.forEach(([id,t])=>{const b=document.createElement('button');b.textContent=t;b.onclick=()=>show(id);b.dataset.id=id;nav.appendChild(b)});
+function show(id){document.querySelectorAll('section').forEach(s=>s.classList.toggle('on',s.id===id));nav.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.id===id));window.scrollTo({top:0,behavior:'smooth'});try{localStorage.setItem('mlLRtab',id)}catch(e){}}
+$('#th').onclick=()=>{const r=document.documentElement;const d=getComputedStyle(r).getPropertyValue('--bg').trim()==='#10141b';r.dataset.theme=d?'light':'dark'};
+const D=(t,h,o)=>`<details${o?' open':''}><summary>${t}</summary>${h}</details>`;
+
+$('#explain').innerHTML='<h2>Deep Explanation</h2><div class="box warn">Built from a noisy Arabic speech-to-text transcript. I reconstructed the meaning from context; double-check notation against your slides.</div>'+
+D('1. Recap: handwritten digits and feature reduction',`<p>Each digit image has <mark>256 pixels (16×16, grayscale)</mark>, so each image is a point in 256 dimensions. A model would need a weight for every pixel and the processor would “chase 256 sheep”. Too many dimensions = slow, hard to visualize.</p>
+<p><b>Solution: feature extraction.</b> Replace 256 pixels with a few meaningful features:</p>
+<ul><li><b>Intensity:</b> average grayscale value of the image (a “1” has little ink, an “8” or “5” a lot).</li><li><b>Symmetry:</b> draw a vertical axis, compare left vs right; a perfectly symmetric digit scores ~100%, a messy one 85–95%.</li></ul>
+<p>Now each image is just <b>(intensity, symmetry)</b> = 2 inputs, <mark>plus the bias/threshold term → 3 weights</mark> to learn. We went from 256 sheep to 3 small ones: a <b>reduction</b>, and we can <b>plot it in 2D</b>.</p>`,1)+
+D('2. Perceptron, the “pocket” and multiclass',`<ul><li>So far: <b>binary classification</b> (e.g. 1 vs 5), with a line separating the two classes.</li>
+<li><b>Pocket algorithm:</b> a small PLA modification. When data isn’t separable PLA keeps wobbling, so run for a fixed number of iterations (e.g. 300) but <mark>keep in your “pocket” the weights with the lowest error seen so far</mark> instead of returning the last ones. The final result isn’t necessarily the last iteration’s.</li>
+<li><b>Multiclass (3, 4, 5… classes):</b> use <mark>one-versus-all</mark>: build a “1 vs not-1” classifier, a “7 vs not-7” classifier, etc., then pick the class whose classifier is most confident.</li></ul>`)+
+D('3. Classification vs regression',`<div class="tw"><table><tr><th></th><th>Classification</th><th>Regression</th></tr>
+<tr><th>Output</th><td>Discrete label (yes/no, ±1)</td><td>Real number (e.g. credit line)</td></tr>
+<tr><th>Hypothesis</th><td class="f">h(x) = sign(wᵀx)</td><td class="f">h(x) = wᵀx</td></tr>
+<tr><th>Role of y</th><td>Class label</td><td>Output (the real value)</td></tr>
+<tr><th>Credit example</th><td>Approve credit? Yes/No</td><td><mark>How much</mark> credit to give (upper limit)</td></tr></table></div>
+<p>The only difference: in regression we <mark>drop the sign</mark> and keep the magnitude. Both use the same linear signal wᵀx. In regression the target y is the <i>output</i> and x the input (plus x may be polynomial features).</p>
+<p><b>Credit-card data point example:</b> age 23, annual salary 30,000, years in residence 1, years in job 1… and the known credit line given for each customer.</p>`)+
+D('4. Hypothesis, g(x) and prediction error',`<ul><li>Data are points (x, y). We draw a line through the middle of the data; it is <b>one hypothesis h</b> chosen from a large set H; the chosen final one is <b>g</b>.</li>
+<li>For a known x, the data has the true <b>y</b>; the model gives <b>g(x) = ŷ</b> (predicted y). The <mark>difference y − ŷ is the error</mark>.</li>
+<li>If the data point lies exactly on the line, error = 0.</li>
+<li>Why learn a line? Because a database lookup only returns known records; the model lets you <mark>answer questions about new, unseen x</mark> (learning from data).</li></ul>
+<div class="box tip">Model analogy: a house <i>model</i> represents the house but you can’t live or cook in it. Every model is an approximation, so some error always remains.</div>`)+
+D('5. In-sample error and overfitting',`<p><b>E_in</b> = error on the data we trained on. If a curve passes exactly through every training point, E_in = 0, but that is <mark>overfitting</mark>: you fit the details/noise, not the real pattern. Reality has noise, so E_in = 0 should make you suspicious. We want a model that approximates, not memorizes.</p>`)+
+D('6. Notation: vectors and matrices',`<ul><li><b>x (small)</b> = ONE sample (one customer): a vector with d features, e.g. (23, 30000, 1, 1, 15). One data point is a <b>single point in d-dimensional space</b>, not several points.</li>
+<li><b>Bias trick:</b> add x₀ = 1 → vector has <mark>d + 1</mark> entries. Weights w₀…w_d.</li>
+<li><b>Matrix X (capital)</b> = all N samples stacked: <mark>N rows (customers) × (d+1) columns (features)</mark>. Like a database table: each row one client, each column one feature.</li>
+<li><b>y</b> = column vector of N outputs. <b>w</b> = column vector of d+1 weights (w₀ is the intercept; it shifts the line up/down, “y-intercept”).</li>
+<li><b>Transpose (ᵀ):</b> turns rows into columns, needed so that shapes line up.</li></ul>
+<div class="f">h(x) = Σ wᵢxᵢ = wᵀx   (i = 0…d)</div>
+<p><b>Why weights = features + 1:</b> 5 features → 6 weights (5 + bias).</p>`)+
+D('7. Matrix multiplication rules (high-yield)',`<ul><li><mark>Inner dimensions must match</mark>: (N × (d+1)) · ((d+1) × 1) → N × 1. Outer dimensions give the result shape.</li>
+<li><b>Order matters:</b> A·B ≠ B·A. Never swap Xw with wX.</li>
+<li>Each prediction = row of X × w: every feature multiplied by its weight, then summed.</li>
+<li>No “division” for matrices; use the <b>inverse</b>, which exists only for <b>square</b> matrices (rows = columns).</li>
+<li><b>Python tip:</b> print <code>.shape</code> before and after each multiplication to trace dimensions. Wrong order gives wrong shapes or silently wrong results.</li>
+<li>Colour images: 3 channels (R, G, B), i.e. three matrices.</li></ul>`)+
+D('8. The error measure: squared error',`<div class="f">E_in(w) = (1/N) Σ (wᵀxₙ − yₙ)²  =  (1/N) ‖Xw − y‖²</div>
+<ul><li><b>Squaring</b> removes the sign (+/− errors would cancel) and <mark>magnifies big errors</mark>, which makes them easier to detect; it is also easy to differentiate.</li>
+<li>We take the <b>average</b> (mean) over all N points → <b>mean squared error</b>.</li>
+<li>‖·‖² is the squared <b>norm</b> = squared distance from the origin: the vector (Xw − y) is a displacement, its norm is the total error size.</li>
+<li><b>Root mean square error (RMSE)</b>: take √ to return to original units. Meaning: “prediction is off by about ±5 on average”. Error value only has meaning in <mark>context</mark> (5 is small vs 50, large vs 1). Like a confidence interval ±.</li>
+<li>Absolute error ignores sign too, but squared error is the one we use here.</li></ul>`)+
+D('9. Minimizing the error: the closed-form solution',`<p>To find w that minimizes E_in, set the <b>derivative (gradient) to zero</b> (slope = 0 at the minimum; derivative measures rate of change; for xᵗ the derivative is t·xᵗ⁻¹).</p>
+<div class="f">∇E_in(w) = (2/N) Xᵀ(Xw − y) = 0</div>
+<div class="f">XᵀX w = Xᵀ y</div>
+<div class="f">w = (XᵀX)⁻¹ Xᵀ y = X† y</div>
+<ul><li>X is N×(d+1): <mark>not square, so it has no ordinary inverse</mark>. XᵀX is (d+1)×(d+1): <b>square</b> and can be inverted.</li>
+<li><b>X† = (XᵀX)⁻¹Xᵀ is the pseudo-inverse</b> (“dagger”). “Dividing by X” is done by multiplying with X†.</li>
+<li>Keep the order: Xᵀ goes <i>before</i> X and before y.</li>
+<li>Result: <mark>one-step solution</mark>. No trial and error, no iterating like PLA. Just compute X†y; then w is the best line.</li>
+<li>Compare: inverse = for square matrices; pseudo-inverse = for tall matrices like X (N ≫ d+1, e.g. 50,000 rows).</li></ul>
+<div class="box tip">Linear regression can also seed classification: use sign(wᵀx) and (optionally) refine with PLA/pocket.</div>`)+
+D('10. Why “linear”? Non-linear transformation',`<ul><li>A problem like a <b>circle</b> (x₁² + x₂² = 1 separates classes) cannot be separated by a line in the original space (a straight line or even a cubic won’t isolate the inside; the curve loops back).</li>
+<li><b>Transform the features:</b> z = Φ(x) = (1, x₁², x₂²). In the new Z-space, a straight line (plane) separates the classes.</li>
+<li>“Linear” refers to <mark>linearity in the weights w</mark>, not in x. So x², polynomials, etc. are fine.</li>
+<li>Workflow: transform → solve the <b>linear</b> problem (X† y or PLA) → map back; the hypothesis in the original space is sign(w̃ᵀΦ(x)).</li>
+<li>Key idea: if you can convert a non-linear problem into a linear one and later return to the original space, you can use all the linear machinery. This is the “heavy lifting” of linear models in machine learning.</li></ul>`);
+
+$('#summary').innerHTML='<h2>Smart Summary</h2><div class="box"><ul>'+[
+'<b>256 pixels → 2 features</b> (intensity, symmetry) + bias = 3 weights',
+'<b>Pocket:</b> keep best weights seen; return best, not last',
+'<b>Multiclass:</b> one-versus-all',
+'<b>Classification:</b> h = sign(wᵀx) · <b>Regression:</b> h = wᵀx (real output)',
+'<b>Error</b> = y − ŷ · always some error · model ≠ reality',
+'<b>E_in = 0 → overfitting</b> suspicion',
+'<b>x</b> = one sample (d+1 with x₀=1) · <b>X</b> = N×(d+1) · <b>w</b> = (d+1)×1',
+'<b>Matrix mult:</b> inner dims match · order matters · check .shape',
+'<b>Squared error</b> (average) · RMSE returns units · meaning depends on context',
+'<b>Minimize:</b> gradient = 0 → XᵀXw = Xᵀy → <mark>w = X†y</mark>',
+'<b>Pseudo-inverse</b> because X isn’t square, XᵀX is',
+'<b>Non-linear:</b> transform z = Φ(x), solve linearly, map back · linear in w'
+].map(x=>'<li>'+x+'</li>').join('')+'</ul></div>';
+
+$('#memory').innerHTML='<h2>Memory Optimization</h2>'+
+D('Mnemonics',`<div class="box tip"><b>Shapes “Rows = Records”:</b> X is <b>N</b> rows (records) × <b>d+1</b> columns (features + bias).</div>
+<div class="box tip"><b>Regression = “Real number”, Classification = “Category”.</b> Remove the <i>sign</i> → regression.</div>
+<div class="box tip"><b>Normal-equation story:</b> “Xᵀ Times X, equals Xᵀ Times y” → multiply both sides by (XᵀX)⁻¹ → w = (XᵀX)⁻¹Xᵀy.</div>
+<div class="box tip"><b>Square both sides of error:</b> “Square kills sign, spotlights big mistakes.”</div>
+<div class="box tip"><b>“Linear in w, not in x.”</b> Say it 3 times.</div>`,1)+
+D('Comparison tables',`<div class="tw"><table><tr><th></th><th>Inverse</th><th>Pseudo-inverse</th></tr><tr><th>Matrix</th><td>Square only</td><td>Any shape (here N×(d+1))</td></tr><tr><th>Formula here</th><td>(XᵀX)⁻¹ on a square matrix</td><td>X† = (XᵀX)⁻¹Xᵀ</td></tr></table></div>
+<div class="tw"><table><tr><th></th><th>x</th><th>X</th></tr><tr><th>Meaning</th><td>one data point (vector)</td><td>all data (matrix)</td></tr><tr><th>Size</th><td>d+1</td><td>N × (d+1)</td></tr></table></div>
+<div class="tw"><table><tr><th></th><th>E_in</th><th>Overfit?</th></tr><tr><td>Large</td><td>Poor fit (underfit)</td><td>No</td></tr><tr><td>Zero via wiggly curve</td><td>Memorized noise</td><td>Likely</td></tr></table></div>`)+
+D('Common mistakes &amp; traps',`<div class="box warn"><ul><li>Forgetting the <b>+1 bias</b> → wrong number of weights.</li><li>Writing <b>w = y / X</b>: matrices don’t divide; use X†.</li><li>Swapping the <b>order</b> in matrix products (Xᵀ placement).</li><li>Thinking one sample is “several points”: one vector = one point.</li><li>Thinking a curve through all points is “best”: that’s overfitting.</li><li>“Linear” means linear in <b>weights</b>, not in the raw inputs.</li><li>Squared error vs RMSE units confusion.</li><li>Believing the pocket returns the last iteration.</li></ul></div>`)+
+D('Spaced repetition plan',`<div class="box">Day 0 read → Day 1 MCQs → Day 3 derive w = X†y by hand from E_in → Day 7 revision sheet → night before: sheet only. Chunks: (1) features, (2) classification vs regression, (3) notation + shapes, (4) error, (5) derivation, (6) non-linear transform.</div>`);
+
+const M=[
+['A 16×16 grayscale digit image has how many input dimensions?',['2','16','256','512'],2,'One per pixel: 16×16 = 256.'],
+['Intensity and symmetry are examples of:',['Labels','Extracted features','Weights','Errors'],1,'Feature extraction reduces 256 dims to 2.'],
+['With 2 features plus the bias term, how many weights?',['2','3','4','256'],1,'d + 1 = 3.'],
+['The symmetry feature compares:',['Top vs bottom pixels','Left vs right about a vertical axis','Darkest vs lightest pixel','Two different images'],1,'Vertical axis, left vs right.'],
+['The pocket algorithm returns:',['The last weights','The best (lowest-error) weights seen so far','Random weights','Zero weights'],1,'Weights with lowest error are kept “in the pocket”.'],
+['For classifying digits into 10 classes using binary classifiers, use:',['One-versus-all','Regression only','Clustering','Normalization'],0,'One class vs the rest, repeated per class.'],
+['Which hypothesis is for linear regression?',['sign(wᵀx)','wᵀx','sign(x)','wx²'],1,'No sign: output is a real number.'],
+['“How much credit should we give?” is a:',['Classification problem','Regression problem','Clustering problem','Sorting problem'],1,'The output is a real value.'],
+['In regression, the error for a point is based on:',['The sign only','y compared with the predicted ŷ','x only','The number of features'],1,'Error = difference between y and ŷ.'],
+['The model g(x) is:',['The true target f','The final chosen hypothesis approximating f','The training set','The noise'],1,'g is the chosen h from H.'],
+['Training error being exactly 0 on a wiggly curve suggests:',['A perfect model','Overfitting','Underfitting','Convergence of PLA'],1,'It memorized noise.'],
+['Why add x₀ = 1?',['To make x bigger','To include the bias/intercept w₀ in the dot product','To normalize','To remove noise'],1,'It folds the intercept into wᵀx.'],
+['X has what shape?',['(d+1) × N','N × (d+1)','N × N','d × d'],1,'N rows (samples), d+1 columns (features).'],
+['A single vector x represents:',['Many customers','One data point (sample)','A weight set','The whole dataset'],1,'One sample, a single point in d-dim space.'],
+['Valid matrix multiplication requires:',['Equal outer dims','Equal inner dims','Both square','Same order'],1,'(a×b)(b×c) → a×c.'],
+['Xw has shape (X is N×(d+1), w is (d+1)×1):',['N×1','(d+1)×1','N×N','1×1'],0,'Inner dims cancel.'],
+['Why square the error?',['To make errors negative','To remove sign and magnify large errors','To reduce computation','To normalize x'],1,'Also differentiable and easy to minimize.'],
+['RMSE is useful because it:',['Is always <1','Returns to the original units','Ignores outliers','Is the gradient'],1,'Square root undoes the squaring.'],
+['An error of 5 is “good” or “bad”:',['Always good','Always bad','Depends on context/scale','Never matters'],2,'Good relative to 50, bad relative to 1.'],
+['To minimize E_in we set:',['E_in = 1','The gradient to zero','w = 0','N = d'],1,'Slope zero at the minimum.'],
+['The normal equation is:',['Xw = y','XᵀXw = Xᵀy','wX = y','XXᵀ = w'],1,'From ∇E_in = 0.'],
+['The pseudo-inverse of X is:',['XᵀX','(XᵀX)⁻¹Xᵀ','X⁻¹','Xᵀ'],1,'X† = (XᵀX)⁻¹Xᵀ.'],
+['Why can’t we use X⁻¹ directly?',['X is not square','X is too small','X is symmetric','X has no bias'],0,'N ≠ d+1 in general.'],
+['Linear regression’s solution is found:',['By many PLA iterations only','In one step via w = X†y','By random search','Only by gradient descent'],1,'Closed form.'],
+['A circular boundary is best handled by:',['A single line in x-space','Transforming to z = (1, x₁², x₂²) then using a line','Dropping features','Using more pixels'],1,'The data become linearly separable in z-space.'],
+['“Linear” in linear models refers to linearity in:',['x','w (the weights)','N','y'],1,'Features can be non-linear transforms.'],
+['Hard: swapping Xᵀ and X order in w = (XᵀX)⁻¹Xᵀy most likely causes:',['Nothing','A shape mismatch or wrong result','A faster solution','Overfitting'],1,'Matrix multiplication is not commutative.']
+];
+let score=0,done=0;
+$('#mcq').innerHTML='<h2>MCQs <span class="tag">(tap an answer)</span></h2><p>Score: <span id="sc">0/0</span> of '+M.length+' <button onclick="location.reload()">Reset</button></p><div id="ml"></div>';
+M.forEach((m,i)=>{const d=document.createElement('div');d.className='q';
+d.innerHTML=`<div class="tag">Q${i+1} · ${i<9?'Easy':i<21?'Medium':'Hard'}</div><b>${m[0]}</b>`;
+const ex=document.createElement('div');ex.className='ex';ex.textContent='✔ '+m[3];
+m[1].forEach((o,j)=>{const b=document.createElement('button');b.className='o';b.textContent=String.fromCharCode(65+j)+'. '+o;
+b.onclick=()=>{if(d.dataset.d)return;d.dataset.d=1;done++;if(j===m[2])score++;b.classList.add(j===m[2]?'ok':'no');d.querySelectorAll('.o')[m[2]].classList.add('ok');ex.classList.add('show');$('#sc').textContent=score+'/'+done};d.appendChild(b)});
+d.appendChild(ex);$('#ml').appendChild(d)});
+
+const W=[
+['Short: Why do we extract features like intensity and symmetry from digit images?','Raw images have 256 pixel dimensions, which is slow and hard to learn from or visualize. Intensity and symmetry compress each image into 2 informative features (3 weights with bias), reducing complexity, enabling a 2D plot and a simple linear separator.'],
+['Short: Difference between classification and regression hypotheses.','Classification: h(x) = sign(wᵀx) outputs a discrete label (e.g. approve/deny). Regression: h(x) = wᵀx outputs a real value (e.g. credit limit). Same linear signal; regression drops the sign and keeps the magnitude.'],
+['Short: What does the pocket algorithm change versus PLA?','On non-separable data PLA doesn’t settle, so we run a fixed number of iterations and keep (pocket) the weights with the lowest error seen, returning those instead of the last iteration’s weights.'],
+['Short: Define X, x, y and w, with shapes.','x: one sample, vector of d+1 entries (x₀=1). X: all samples, N×(d+1), one row per customer. y: N×1 outputs. w: (d+1)×1 weights. Prediction vector = Xw (N×1).'],
+['Long: Explain why squared error is used and how it connects to RMSE.','Errors can be positive or negative and would cancel, so we square them; squaring also magnifies large errors, making them easier to detect, and is differentiable for optimization. E_in(w) = (1/N)‖Xw−y‖² is the mean squared error. Taking its square root gives RMSE, in the original units of y, interpretable as the typical size of the prediction error (e.g. ±5 credit units). Its meaning depends on context: 5 is small relative to 50 but large relative to 1.'],
+['Long: Derive the closed-form solution of linear regression.','Start with E_in(w) = (1/N)‖Xw − y‖². Minimizing requires gradient zero: ∇E_in = (2/N)Xᵀ(Xw − y) = 0, giving XᵀXw = Xᵀy. X is N×(d+1) and not square, so it has no inverse, but XᵀX is (d+1)×(d+1) and square, hence invertible (when features are independent). Multiplying both sides by (XᵀX)⁻¹: w = (XᵀX)⁻¹Xᵀy = X†y, where X† is the pseudo-inverse. This is a one-step solution with no iteration, and the order of multiplication must be respected.'],
+['Long: How can linear models solve non-linearly separable problems? Give an example.','Linear means linear in the weights, so we may transform the inputs non-linearly first. For a circular boundary x₁² + x₂² = 1 no line works in x-space, but with z = Φ(x) = (1, x₁², x₂²) the classes become linearly separable by a plane/line in z-space. We solve the linear problem there (e.g. w = Z†y or PLA/pocket with sign), then use the hypothesis sign(w̃ᵀΦ(x)) in the original space. This lets us reuse all the linear machinery for non-linear problems.']
+];
+$('#written').innerHTML='<h2>Written Questions &amp; Model Answers</h2>'+W.map((w,i)=>D(`${i+1}. ${w[0]}`,`<div class="box tip"><b>Model answer:</b> ${w[1]}</div>`)).join('');
+
+$('#rev').innerHTML=`<h2>⚡ Revision Sheet · Night Before</h2>
+<div class="box"><b>Features:</b> 256 px → (intensity, symmetry) + bias → 3 weights. <b>Pocket:</b> keep best. <b>Multiclass:</b> one-vs-all.</div>
+<div class="box"><b>Class:</b> sign(wᵀx) · <b>Regress:</b> wᵀx · error = y − ŷ · E_in = 0 ⇒ overfit?</div>
+<div class="box"><b>Shapes:</b> x = (d+1) · X = N×(d+1) · w = (d+1)×1 · y = N×1 · inner dims match, order matters.</div>
+<div class="f">E_in(w) = (1/N)‖Xw − y‖²</div>
+<div class="f">∇E_in = (2/N)Xᵀ(Xw − y) = 0  ⇒  XᵀXw = Xᵀy</div>
+<div class="f">w = (XᵀX)⁻¹Xᵀy = X†y</div>
+<div class="box"><b>Why pseudo-inverse:</b> X not square; XᵀX square. <b>RMSE:</b> √MSE, same units as y, context-dependent.</div>
+<div class="box"><b>Non-linear:</b> z = Φ(x) = (1, x₁², x₂²) → linear in z → map back. “Linear in w.”</div>
+<div class="box warn"><b>Traps:</b> forgetting +1 · dividing by matrices · swapping order · overfitting at E_in = 0.</div>`;
+let t='explain';try{t=localStorage.getItem('mlLRtab')||t}catch(e){}
+show(t);
+</script></body></html>
