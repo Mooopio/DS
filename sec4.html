@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exam Prep: Matrices and LLM Context & RAG</title>
+<style>
+:root{--bg:#f6f7f8;--fg:#16181d;--mut:#656b76;--line:#dfe2e6;--card:#fff;--acc:#2d4a8a;--hi:#e3eafc;--ok:#1d7f4a;--bad:#b8372b}
+[data-theme=dark]{--bg:#0f1114;--fg:#e9eaed;--mut:#9097a2;--line:#262a31;--card:#161920;--acc:#8fb0ff;--hi:#232f52;--ok:#4cc884;--bad:#ff8272}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.7 "Iowan Old Style",Palatino,Georgia,serif;transition:background .25s,color .25s}
+.ui,button,summary,nav{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+header{max-width:780px;margin:0 auto;padding:48px 24px 8px}
+h1{font-size:2rem;line-height:1.2;margin:0 0 6px;font-weight:600;letter-spacing:-.01em}
+.sub{color:var(--mut);margin:0 0 28px;font-size:.95rem}
+.bar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+button{font-size:.9rem;color:var(--fg);background:none;border:0;padding:8px 14px;cursor:pointer;transition:background .2s,color .2s}
+.seg button.on{background:var(--fg);color:var(--bg)}
+.tog{border:1px solid var(--line);border-radius:8px}
+button:hover{background:var(--hi)}
+.seg button.on:hover{background:var(--fg)}
+button:focus-visible,summary:focus-visible,.opt:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+nav{max-width:780px;margin:20px auto 0;padding:0 24px;display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+nav button{border-radius:0;padding:10px 12px;color:var(--mut);border-bottom:2px solid transparent;margin-bottom:-1px}
+nav button.on{color:var(--fg);border-bottom-color:var(--acc)}
+main{max-width:780px;margin:0 auto;padding:32px 24px 96px}
+h2{font-size:1.35rem;margin:0 0 18px;font-weight:600}
+h3{font-size:1.05rem;margin:22px 0 6px;font-weight:600}
+p{margin:0 0 14px}
+mark{background:var(--hi);color:inherit;padding:1px 4px;border-radius:3px}
+details{border-top:1px solid var(--line);padding:4px 0}
+details:last-of-type{border-bottom:1px solid var(--line)}
+summary{cursor:pointer;padding:14px 0;font-weight:600;list-style:none;display:flex;justify-content:space-between;gap:16px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";color:var(--mut);font-weight:400;transition:transform .2s}
+details[open]>summary::after{transform:rotate(45deg)}
+.body{padding:0 0 14px;animation:o .25s ease}
+@keyframes o{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+ul{padding-left:1.2em;margin:0 0 14px}li{margin:4px 0}
+table{border-collapse:collapse;width:100%;font-size:.93rem;margin:10px 0 16px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:system-ui,sans-serif;font-weight:600}
+.wrap{overflow-x:auto}
+.mx{display:inline-table;border-left:2px solid currentColor;border-right:2px solid currentColor;border-radius:4px;margin:0 6px;vertical-align:middle;width:auto;font-size:.95rem}
+.mx td{border:0;padding:2px 9px;text-align:right}
+.note{border-left:3px solid var(--acc);padding:2px 0 2px 14px;margin:14px 0;color:var(--mut)}
+.trap{border-left:3px solid var(--bad);padding:2px 0 2px 14px;margin:14px 0}
+.q{padding:22px 0;border-top:1px solid var(--line)}
+.q p{margin-bottom:10px}
+.opt{display:block;width:100%;text-align:left;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:6px 0;background:var(--card);font-family:inherit;font-size:.97rem;line-height:1.5}
+.opt.right{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.exp{display:none;font-size:.95rem;color:var(--mut);margin-top:8px}
+.q.done .exp{display:block;animation:o .25s ease}
+.score{position:sticky;top:0;background:var(--bg);padding:10px 0;font-family:system-ui,sans-serif;font-size:.9rem;color:var(--mut);display:flex;justify-content:space-between;align-items:center;z-index:2}
+.sheet{border:1px solid var(--line);border-radius:8px;padding:8px 24px 14px;background:var(--card)}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.88em;background:var(--hi);padding:1px 5px;border-radius:3px}
+@media(max-width:520px){body{font-size:16px}h1{font-size:1.6rem}header{padding-top:32px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{nav,.bar,.score{display:none}}
+</style></head>
+<body>
+<header>
+<h1>Exam preparation</h1>
+<p class="sub">Explanation, summary, questions and a night-before sheet for each lecture.</p>
+<div class="bar ui"><div class="seg" id="subs"></div><button class="tog" id="theme">Dark mode</button></div>
+</header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<script>
+const mx=r=>'<table class="mx">'+r.map(x=>'<tr>'+x.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</table>';
+const D={
+m:{name:'Matrices',
+explain:[
+['The big idea',`<p><mark>Matrix multiplication</mark> builds a new matrix where every cell is a <mark>dot product</mark>: take one <b>row</b> of the first matrix, one <b>column</b> of the second, multiply the pairs that line up, then add them.</p><p class="note">Analogy: a row is a shopper’s quantities (3 apples, 2 pears, 1 plum). A column is a shop’s prices for those same items. Quantity × price, summed, is that shopper’s bill at that shop. Every cell of the result is one bill.</p>`],
+['The dimension rule',`<p>If A is <b>m×n</b> and B is <b>n×p</b>, then AB is <b>m×p</b>.</p><ul><li>The two <mark>inner numbers must be equal</mark> (n and n), otherwise the product does not exist. On the slide these are marked “Equal”.</li><li>The two <mark>outer numbers</mark> (m and p) give the size of the result, the “Dimensions of AB”.</li></ul><p class="note">Memory trigger: <b>“Inner match, outer make.”</b> Why it works: a row of A has n entries and a column of B has n entries, so they can be paired off one to one.</p>`],
+['Worked example from the slides',`<p>${mx([[1,2,3],[4,5,6]])} × ${mx([[10,11],[20,21],[30,31]])}</p><p>A is 2×3, B is 3×2. Inner numbers 3 and 3 match, so the result is <mark>2×2</mark>.</p><div class="wrap"><table><tr><th>Cell</th><th>Row · Column</th><th>Working</th><th>Value</th></tr><tr><td>Top-left</td><td>row 1 · col 1</td><td>1×10 + 2×20 + 3×30 = 10+40+90</td><td><b>140</b></td></tr><tr><td>Top-right</td><td>row 1 · col 2</td><td>1×11 + 2×21 + 3×31 = 11+42+93</td><td><b>146</b></td></tr><tr><td>Bottom-left</td><td>row 2 · col 1</td><td>4×10 + 5×20 + 6×30 = 40+100+180</td><td><b>320</b></td></tr><tr><td>Bottom-right</td><td>row 2 · col 2</td><td>4×11 + 5×21 + 6×31 = 44+105+186</td><td><b>335</b></td></tr></table></div><p>Result: ${mx([[140,146],[320,335]])}</p><p class="note">The slide highlights row 1 of A and column 1 of B (the red arrow) to produce the highlighted 140.</p>`],
+['The inverse of a 2×2 matrix',`<p>${mx([['a','b'],['c','d']])}<sup>−1</sup> = <b>1/(ad−bc)</b> ${mx([['d','−b'],['−c','a']])}</p><p><mark>Recipe:</mark> (1) swap <b>a</b> and <b>d</b>, (2) change the signs of <b>b</b> and <b>c</b>, (3) divide everything by the <mark>determinant ad−bc</mark>.</p><p class="note">Analogy: the inverse is the “undo” button. Like 5 × (1/5) = 1, a matrix times its inverse gives the identity matrix I.</p><h3>Example from the slides</h3><p>${mx([[3,3.5],[3.2,3.6]])}<sup>−1</sup></p><ul><li>Determinant: 3×3.6 − 3.5×3.2 = 10.8 − 11.2 = <b>−0.4</b></li><li>1/(−0.4) = −2.5</li><li>Swapped and signed matrix: ${mx([[3.6,-3.5],[-3.2,3]])}</li><li>Multiply by −2.5: ${mx([[-9,8.75],[8,-7.5]])}</li></ul><p><b>Check:</b> row 1 of A times column 1 of the inverse = 3(−9) + 3.5(8) = −27 + 28 = 1, and row 1 times column 2 = 3(8.75) + 3.5(−7.5) = 0. This gives the identity matrix.</p><div class="trap"><b>Trap:</b> if ad−bc = 0 you would divide by zero, so <mark>no inverse exists</mark>. Also do not swap b and c, and do not forget to flip their signs.</div>`],
+['Slide inventory',`<p>The deck is titled <b>Data Science</b> (by Michel Samir Zaki). Content slides: <i>Matrix Multiplication</i> and <i>Inverse Matrix</i>, then a closing “Thank You”. Everything on them is covered above.</p>`]],
+summary:`<ul><li><b>Product AB exists</b> only if columns of A = rows of B (inner dimensions equal).</li><li><b>Size</b>: (m×n)(n×p) = <b>m×p</b>.</li><li><b>Each cell</b> = row of A · column of B (multiply pairs, add).</li><li>Example: AB = [[140,146],[320,335]].</li><li><b>2×2 inverse</b>: 1/(ad−bc) × [[d,−b],[−c,a]].</li><li><b>Determinant</b> ad−bc; if 0, no inverse.</li><li>Example: det = −0.4, inverse = [[−9, 8.75],[8, −7.5]].</li></ul>`,
+mcq:[
+['For A of size m×n and B of size p×q, the product AB is defined when:',['m = p','n = p','n = q','m = q'],1,'Columns of A (n) must equal rows of B (p).'],
+['A is 2×3 and B is 3×2. What size is AB?',['3×3','2×3','2×2','3×2'],2,'Outer numbers 2 and 2 give a 2×2 result.'],
+['In the slide example, the top-left entry of AB is:',['60','140','146','320'],1,'1×10 + 2×20 + 3×30 = 10+40+90 = 140.'],
+['Which calculation gives the bottom-right entry (335)?',['Row 1 of A · column 2 of B','Row 2 of A · column 1 of B','Row 2 of A · column 2 of B','Row 1 of A · column 1 of B'],2,'Entry (i, j) uses row i of A and column j of B: 44+105+186 = 335.'],
+['A is 3×2 and B is 3×2. Which is true?',['AB is 3×2','AB is 2×2','AB is 3×3','AB is not defined'],3,'Inner numbers are 2 and 3, which do not match. (BA would also be undefined.)'],
+['With A 2×3 and B 3×2 as in the slides, BA has size:',['2×2','3×3','Undefined','3×2'],1,'B is 3×2 and A is 2×3: inner 2 = 2, outer 3 and 3, so 3×3. Tricky: AB and BA can differ even in size.'],
+['The inverse of [[a,b],[c,d]] is:',['1/(ad−bc) · [[d,−b],[−c,a]]','1/(ad−bc) · [[a,−b],[−c,d]]','1/(ad+bc) · [[d,b],[c,a]]','(ad−bc) · [[d,−b],[−c,a]]'],0,'Swap a and d, negate b and c, divide by ad−bc.'],
+['The determinant of [[3,3.5],[3.2,3.6]] is:',['0.4','−0.4','21.6','−21.6'],1,'3×3.6 − 3.5×3.2 = 10.8 − 11.2 = −0.4.'],
+['A 2×2 matrix has no inverse when:',['a = d','b = c','ad − bc = 0','ad − bc = 1'],2,'Division by zero is impossible.'],
+['The bottom-left entry of the inverse in the slide example is:',['−9','8.75','8','−7.5'],2,'−2.5 × (−3.2) = 8.'],
+['Hard: why is the inverse in the example multiplied by −2.5?',['It is the determinant','It is 1/determinant, and 1/(−0.4) = −2.5','It is −b/a','It makes the matrix symmetric'],1,'The factor is 1/(ad−bc) = 1/(−0.4) = −2.5.'],
+['A times its inverse equals:',['The zero matrix','A itself','The identity matrix','The transpose'],2,'Check: 3(−9)+3.5(8) = 1 and 3(8.75)+3.5(−7.5) = 0, as in the identity.']],
+written:[
+['Multiply A = [[1,2,3],[4,5,6]] by B = [[10,11],[20,21],[30,31]] and show your steps. (Long)','Dimensions: A is 2×3, B is 3×2; inner numbers match so AB is 2×2. Each entry is a row of A · column of B: (1,1) = 10+40+90 = 140; (1,2) = 11+42+93 = 146; (2,1) = 40+100+180 = 320; (2,2) = 44+105+186 = 335. AB = [[140,146],[320,335]].'],
+['State the condition for matrix multiplication and the size of the result. (Short)','AB is defined when A is m×n and B is n×p (columns of A equal rows of B). The result AB is m×p.'],
+['Find the inverse of [[3,3.5],[3.2,3.6]] and verify. (Long)','det = 3(3.6) − 3.5(3.2) = −0.4. Inverse = (1/−0.4) · [[3.6,−3.5],[−3.2,3]] = [[−9,8.75],[8,−7.5]]. Verify: 3(−9)+3.5(8) = 1 and 3(8.75)+3.5(−7.5) = 0, so A·A⁻¹ = I.'],
+['When does a 2×2 matrix not have an inverse, and why? (Short)','When ad − bc = 0. The formula needs 1/(ad−bc), which is undefined.']],
+rev:`<h3>Rules</h3><ul><li>(m×n)(n×p) = <b>m×p</b>. Inner match, outer make.</li><li>Cell(i,j) = row i of A · column j of B.</li><li>Inverse (2×2) = 1/(ad−bc) [[d,−b],[−c,a]]. <b>Swap diagonal, flip the others, divide by det.</b></li><li>det = 0 means no inverse. A·A⁻¹ = I.</li></ul><h3>Numbers to remember</h3><ul><li>AB = [[140,146],[320,335]]</li><li>det = −0.4, factor −2.5, inverse = [[−9, 8.75],[8, −7.5]]</li></ul><h3>Common mistakes</h3><ul><li>Multiplying entry by entry (that is not matrix multiplication).</li><li>Assuming AB = BA.</li><li>Forgetting to flip the signs of b and c.</li></ul>`},
+l:{name:'LLM context and RAG',
+explain:[
+['What is an LLM?',`<p>A <mark>Large Language Model</mark> generates text from patterns learned in training. Flow: <b>Input</b> (question or instructions) → <b>LLM</b> → <b>Output</b> (generated answer).</p><p>Key limit: it can process only a <mark>limited amount of information in a single interaction</mark>.</p><p class="note">Analogy: a very well-read autocomplete that predicts useful text.</p>`],
+['What is a context window?',`<p>The <mark>maximum number of tokens a model can process in a single request</mark>, covering the relevant input and the generated output, according to the model’s configuration.</p><p>It can contain: system instructions, the user’s question, conversation history, retrieved documents or other context, and the generated response (depending on token-budget rules).</p><p class="note">Analogy: a <b>desk</b> with limited space. Only so much fits in front of you at once.</p>`],
+['What is a token?',`<p>A unit of text an LLM processes: a word, part of a word, punctuation, or another text unit. Example: “Context windows limit what a model can read.” is split into pieces such as Context / window / s / limit / what / a / model / can / read / .</p><div class="wrap"><table><tr><th>Text</th><th>Approx. tokens</th></tr><tr><td>Hello</td><td>1</td></tr><tr><td>ChatGPT is useful.</td><td>5</td></tr><tr><td>Artificial intelligence</td><td>2–4</td></tr><tr><td>A long Python program</td><td>Depends on its content</td></tr></table></div><div class="trap"><b>Trap:</b> these are illustrative estimates, not universal rules. Tokenization varies by model, language and formatting; Arabic text and source code may tokenize differently from ordinary English.</div>`],
+['How the window works',`<p>Hypothetical 10,000-token window. Instructions, conversation and documents use 8,000, leaving <mark>≈ 2,000</mark> for the answer.</p><p><mark>Input and output draw on the same budget</mark>, so a very full input leaves little room for the answer. (If input used 9,900 tokens, only about 100 remain.) This is simplified: real input and output limits depend on the model and configuration, and may be set separately.</p>`],
+['Five limitations',`<ol><li><b>Capacity:</b> there is a maximum number of tokens. Oversized input may be rejected, truncated or reduced; maximum output may be limited separately.</li><li><b>History:</b> long conversations can exceed the window. Older messages may be omitted, summarized or unavailable; systems differ.</li><li><b>Lost in the middle:</b> models may use information less reliably in the middle of a long context than near the beginning or end. A documented tendency, <i>not</i> universal.</li><li><b>Output competes:</b> input and output share one budget.</li><li><b>Not memory:</b> context covers only the current request.</li></ol><p>Discussion prompt on the slide: if the answer is already in the prompt, will the model always use it correctly? <mark>No, not necessarily.</mark> Large documents must be shortened, split or retrieved.</p>`],
+['Context vs memory vs external knowledge',`<div class="wrap"><table><tr><th>Concept</th><th>Meaning</th><th>Analogy</th></tr><tr><td>Context</td><td>Information available to the model for the current request</td><td>The desk</td></tr><tr><td>Persistent memory</td><td>Information saved separately and made available in later interactions</td><td>A notebook</td></tr><tr><td>External knowledge sources</td><td>Documents or databases searched when needed</td><td>A library</td></tr></table></div><p>Three different concepts. Do not confuse them.</p>`],
+['Four ways to handle the limits',`<div class="wrap"><table><tr><th>Technique</th><th>What it does</th><th>Useful when</th></tr><tr><td>Summarization</td><td>Condenses older conversation into key facts, decisions and open questions</td><td>Conversations grow long</td></tr><tr><td>Chunking</td><td>Divides a large document into smaller sections</td><td>A document is too big to process at once</td></tr><tr><td>RAG</td><td>Stores documents externally and retrieves relevant passages for a question</td><td>Answers must come from large or private sources</td></tr><tr><td>Context management</td><td>Removes redundant information, unneeded tool outputs and irrelevant content</td><td>The window is crowded with noise</td></tr></table></div><p>They are often combined.</p>`],
+['What is RAG?',`<p><mark>Retrieval-Augmented Generation</mark> retrieves relevant information from an external knowledge source and supplies it to an LLM to help generate a <b>grounded</b> answer.</p><ul><li><b>Retrieval:</b> find relevant information.</li><li><b>Augmentation:</b> add that information to the prompt.</li><li><b>Generation:</b> the LLM produces the answer.</li></ul><p>Helps with private documents, course materials and information outside the training data.</p><div class="trap"><b>Traps:</b> RAG <mark>does not retrain the model</mark> and <mark>does not guarantee correct answers</mark>.</div><p class="note">Memory trigger: <b>R-A-G = Retrieve, Add, Generate.</b></p>`],
+['Why RAG? Example',`<p>A student asks: “What are the university’s rules for submitting the graduation project?” (illustrative; no real policies implied).</p><div class="wrap"><table><tr><th>Without RAG</th><th>With RAG</th></tr><tr><td>The model may not know the specific rules; may give a generic answer; may make unsupported claims</td><td>The system searches official documents, retrieves the relevant passages, supplies passages and question to the LLM; the answer is based on the supplied evidence</td></tr></table></div>`],
+['RAG workflow and the window',`<p><b>Question</b> (user asks) → <b>Retrieve</b> (search an external source, select the best passages) → <b>Build prompt</b> (passages + question + instructions) → <b>Generate</b> (grounded answer). Retrieved passages enter the LLM alongside the question.</p><p>External collection (far more than fits) → retrieved passages (small relevant subset) → final prompt (must fit the window).</p><p class="note"><mark>RAG manages which information is supplied. It does not remove the context-window limit.</mark></p>`],
+['Self-check answers from the slides',`<ul><li><b>Token vs context window:</b> a token is a unit of text; the context window is the maximum number of tokens handled in a request.</li><li><b>Why not send a whole textbook:</b> it may exceed the limit, waste budget, bury relevant details, and add cost or latency.</li><li><b>Three RAG stages:</b> retrieval, augmentation, generation.</li></ul>`]],
+summary:`<ul><li><b>Context window</b> = max tokens per request (input + output, instructions, history, documents).</li><li><b>Token</b> = word, word part, punctuation or other unit; counts are approximate.</li><li><b>Input and output share one budget.</b></li><li><b>Limitations:</b> capacity, history, lost in the middle, output competes, not memory.</li><li><b>Desk / notebook / library</b> = context / persistent memory / external sources.</li><li><b>Fixes:</b> summarization, chunking, RAG, context management.</li><li><b>RAG</b> = retrieval, augmentation, generation. No retraining, no guarantee, window still applies.</li></ul>`,
+mcq:[
+['A context window is best defined as:',['The model’s training dataset','The maximum number of tokens processed in a single request','The model’s permanent memory','The number of users at once'],1,'It covers input and generated output for one request.'],
+['Which is NOT typically inside a context window?',['System instructions','Conversation history','Retrieved documents','The model’s entire training dataset'],3,'Training data is learned in training, not placed in the window.'],
+['A 10,000-token window already holds 8,000 tokens. About how many remain?',['10,000','8,000','2,000','0'],2,'Input and output share the budget: 10,000 − 8,000.'],
+['A token is:',['Always exactly one word','A unit of text such as a word, word part or punctuation','A paragraph','A document chunk'],1,'Tokens can be whole words, fragments or punctuation.'],
+['“Lost in the middle” means:',['Models always ignore the middle','Models may use middle content less reliably than start or end','Middle messages are deleted','Models can only read the last line'],1,'A documented tendency, not a universal behavior. Tricky: “always” is wrong.'],
+['Context differs from persistent memory because context:',['Is saved forever','Covers only the current request','Is stored in a database','Retrains the model'],1,'Persistent memory is saved separately and supplied again later.'],
+['The three stages of RAG, in order, are:',['Generation, retrieval, augmentation','Retrieval, augmentation, generation','Augmentation, generation, retrieval','Training, retrieval, generation'],1,'Find, add to prompt, generate.'],
+['Does RAG retrain the model?',['Yes, every query','Yes, once a day','No, it supplies information at request time','Only for private documents'],2,'RAG does not retrain the model.'],
+['Hard: which statement is correct?',['RAG guarantees correct answers','RAG removes the context-window limit','RAG chooses what to supply, but the final prompt must still fit the window','RAG replaces tokens'],2,'Two traps: no guarantee, and the limit remains.'],
+['The window is crowded with redundant tool outputs. Best technique?',['Context management','Chunking','Summarization','Retraining'],0,'Context management removes redundant or irrelevant content.'],
+['A document is too big to process at once. Which technique fits most directly?',['Chunking','Context management','Persistent memory','Lowering the token count of the question'],0,'Chunking divides it into smaller sections. (RAG also helps when answers must come from large or private sources.)'],
+['Why is sending a whole textbook to an LLM inefficient?',['Textbooks are copyrighted','It may exceed the limit, waste budget, bury details and add cost or latency','Tokens cannot represent books','The model forgets the question instantly'],1,'This is the slide’s answer key.']],
+written:[
+['What is the difference between a token and a context window? (Short)','A token is a unit of text (word, word part, punctuation). The context window is the maximum number of tokens the model can process in a single request, covering input and generated output.'],
+['Why might sending an entire textbook to an LLM be inefficient? (Short)','It may exceed the window, waste the token budget, bury relevant details (lost in the middle), and add cost or latency. Better: retrieve only the relevant passages.'],
+['Explain the five limitations of context windows. (Long)','Capacity: a maximum token count; oversized input may be rejected, truncated or reduced. History: long chats can exceed the window, so older messages may be omitted or summarized. Lost in the middle: middle content may be used less reliably. Output competes: input and output share one budget. Not memory: context covers only the current request.'],
+['Explain RAG with an example, including its limits. (Long)','RAG retrieves relevant information from an external source and supplies it to the LLM to produce a grounded answer, in three stages: retrieval, augmentation, generation. Example: asked about graduation-project submission rules, the system searches official documents, retrieves the relevant passages, and gives them with the question to the LLM, so the answer rests on evidence rather than guesses. Limits: it does not retrain the model, does not guarantee correct answers, and the final prompt must still fit the context window.']],
+rev:`<h3>Definitions</h3><ul><li><b>Context window:</b> max tokens per request (input + output).</li><li><b>Token:</b> word, word part, punctuation. Estimates only.</li><li><b>RAG:</b> retrieve external info, add to prompt, generate a grounded answer.</li></ul><h3>Lists</h3><ul><li><b>Limitations (5):</b> capacity, history, lost in the middle, output competes, not memory.</li><li><b>Fixes (4):</b> summarization, chunking, RAG, context management.</li><li><b>Desk / notebook / library:</b> context / persistent memory / external sources.</li><li><b>RAG workflow:</b> question → retrieve → build prompt → generate.</li></ul><h3>Traps</h3><ul><li>RAG ≠ retraining. RAG ≠ guaranteed correct. RAG ≠ no window limit.</li><li>Lost in the middle is a tendency, not a rule.</li><li>Token counts are illustrative; Arabic and code may differ.</li><li>Example: 10,000 − 8,000 = about 2,000 left.</li></ul>`}};
+const SEC=[['e','Explanation'],['s','Summary'],['q','MCQs'],['w','Written'],['r','Revision']];
+let sub='m',sec='e';
+const $=i=>document.getElementById(i);
+function head(){
+$('subs').innerHTML=Object.entries(D).map(([k,v])=>`<button class="${k==sub?'on':''}" data-k="${k}">${v.name}</button>`).join('');
+$('nav').innerHTML=SEC.map(([k,n])=>`<button class="${k==sec?'on':''}" data-s="${k}">${n}</button>`).join('');}
+function render(){
+head();const d=D[sub];let h='';
+if(sec=='e')h='<h2>Explanation</h2>'+d.explain.map((x,i)=>`<details ${i<2?'open':''}><summary>${x[0]}</summary><div class="body">${x[1]}</div></details>`).join('');
+if(sec=='s')h='<h2>Summary</h2>'+d.summary+'<h3>Spaced review</h3><p>Reread this on day 1, day 3, day 7 and day 14. Each time, cover it and recall it aloud first.</p>';
+if(sec=='q'){h=`<h2>Multiple choice</h2><div class="score"><span>Score: <b id="sc">0</b> / ${d.mcq.length}</span><button class="tog" id="rs">Reset</button></div>`+d.mcq.map((m,i)=>`<div class="q" data-i="${i}"><p><b>${i+1}.</b> ${m[0]}</p>${m[1].map((o,j)=>`<button class="opt" data-j="${j}">${o}</button>`).join('')}<div class="exp"><b>Answer: ${m[1][m[2]]}.</b> ${m[3]}</div></div>`).join('');}
+if(sec=='w')h='<h2>Written questions</h2>'+d.written.map(x=>`<details><summary>${x[0]}</summary><div class="body"><p><mark>Model answer</mark></p><p>${x[1]}</p></div></details>`).join('');
+if(sec=='r')h='<h2>Night-before sheet</h2><div class="sheet">'+d.rev+'</div>';
+$('main').innerHTML=h;
+if(sec=='q'){let s=0;document.querySelectorAll('.q').forEach(q=>{const m=d.mcq[q.dataset.i];q.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(q.classList.contains('done'))return;q.classList.add('done');const j=+b.dataset.j;if(j==m[2]){b.classList.add('right');s++;$('sc').textContent=s}else{b.classList.add('wrong');q.querySelectorAll('.opt')[m[2]].classList.add('right')}})});$('rs').onclick=render;}}
+$('subs').onclick=e=>{if(e.target.dataset.k){sub=e.target.dataset.k;render()}};
+$('nav').onclick=e=>{if(e.target.dataset.s){sec=e.target.dataset.s;render()}};
+function theme(t){document.documentElement.dataset.theme=t;$('theme').textContent=t=='dark'?'Light mode':'Dark mode'}
+$('theme').onclick=()=>theme(document.documentElement.dataset.theme=='dark'?'light':'dark');
+theme(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+render();
+</script></body></html>

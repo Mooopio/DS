@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Data Science Exam Prep: Supervised/Unsupervised + Perceptron</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--tx:#1b2433;--mut:#5b6679;--ac:#0b6fc2;--ok:#16874a;--bad:#c0392b;--hl:#fff3bf;--bd:#dde3ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10151d;--card:#18202c;--tx:#e7ecf3;--mut:#9aa6b8;--ac:#5aaaf0;--ok:#43c283;--bad:#ef7b6e;--hl:#4a4015;--bd:#2a3445}}
+:root[data-theme="dark"]{--bg:#10151d;--card:#18202c;--tx:#e7ecf3;--mut:#9aa6b8;--ac:#5aaaf0;--ok:#43c283;--bad:#ef7b6e;--hl:#4a4015;--bd:#2a3445}
+*{box-sizing:border-box}html{scroll-padding-top:70px}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--card);border-bottom:1px solid var(--bd);padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+h1{font-size:1.05rem;margin:0 auto 0 0}
+nav{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;cursor:pointer}
+.tab,.tg{border:1px solid var(--bd);background:var(--bg);color:var(--tx);padding:6px 12px;border-radius:999px;font-size:.88rem;transition:.2s}
+.tab.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+main{max-width:860px;margin:0 auto;padding:16px}
+section{display:none;animation:f .35s}section.on{display:block}
+@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+details{background:var(--card);border:1px solid var(--bd);border-radius:12px;margin:12px 0;padding:0 16px}
+summary{cursor:pointer;font-weight:650;padding:13px 0;color:var(--ac)}
+details[open] summary{border-bottom:1px solid var(--bd);margin-bottom:10px}
+h2{margin:6px 0 4px;font-size:1.3rem}h3{margin:14px 0 4px;font-size:1rem}
+mark{background:var(--hl);color:inherit;padding:0 3px;border-radius:3px}
+.box{border-left:4px solid var(--ac);background:var(--bg);padding:8px 12px;margin:10px 0;border-radius:6px}
+.trap{border-color:var(--bad)}.tip{border-color:var(--ok)}
+.sc{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px;margin:8px 0}
+th,td{border:1px solid var(--bd);padding:7px 10px;text-align:left;font-size:.92rem}th{background:var(--bg)}
+code{background:var(--bg);padding:1px 6px;border-radius:5px;font-family:ui-monospace,Menlo,monospace;font-size:.92em}
+.q{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin:12px 0}
+.o{display:block;width:100%;text-align:left;margin:6px 0;padding:9px 12px;border:1px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:8px;transition:.2s}
+.o:hover{border-color:var(--ac)}.o.ok{background:var(--ok);color:#fff;border-color:var(--ok)}.o.no{background:var(--bad);color:#fff;border-color:var(--bad)}
+.ex{display:none;margin-top:8px;font-size:.92rem;color:var(--mut)}.q.done .ex{display:block}
+.lv{font-size:.75rem;color:var(--mut)}
+#score{position:sticky;top:60px;background:var(--card);border:1px solid var(--bd);border-radius:999px;display:inline-block;padding:3px 14px;font-weight:600}
+.ans{display:none}.ans.show{display:block}
+@media(max-width:560px){main{padding:10px}}
+</style></head><body>
+<header><h1>Data Science · Exam Prep</h1>
+<nav id="nav"></nav><button class="tg" id="th">☾ / ☀</button></header>
+<main>
+
+<section id="explain" class="on">
+<h2>1. Deep explanation</h2>
+<details open><summary>1.1 Big picture: the two learning styles</summary>
+<p><mark>Supervised learning</mark> uses <b>labeled data</b> to predict outcomes. <mark>Unsupervised learning</mark> uses <b>unlabeled data</b>. A <mark>hybrid model</mark> that includes supervised learning uses <b>both labeled and unlabeled data</b>.</p>
+<div class="box tip"><b>Analogy:</b> Supervised = studying with an answer key (a teacher checks you). Unsupervised = being handed a pile of mixed Lego and sorting it by similarity with nobody telling you the categories.</div></details>
+
+<details><summary>1.2 Supervised learning</summary>
+<p><b>Definition:</b> the ML approach defined by its use of <mark>labeled datasets</mark> to train algorithms to <mark>classify data and predict outcomes</mark>.</p>
+<h3>Pipeline (from the diagram)</h3>
+<p>Input raw data → <b>Supervisor</b> supplies the <b>training data set</b> and <b>desired output</b> → <b>Algorithm</b> → <b>Processing</b> → <b>Output</b> (separated groups).</p>
+<h3>Labelled dataset = feature columns + label (class) column</h3>
+<p>Example: leads with Location, Gender, Company size, Revenues, Number of emails (features) and <b>Client = YES/NO</b> (the label). Rows: UK/F/5/500000/3→NO; Ireland/F/6/600000/2→NO; UK/M/6/600000/5→YES; USA/F/10/1000000/12→YES; USA/F/3/300000/4→YES; USA/M/5/500000/7→YES; Germany/M/6/600000/1→NO.</p>
+<h3>Two methods</h3>
+<p><b>Classification:</b> output is classes or categories.</p>
+<ul><li><b>Binary:</b> two classes (Spam / Not spam).</li><li><b>Multiclass:</b> many classes, exactly one is correct (the dog photo → Dog among Dog, Cat, Horse, Fish, Bird…).</li><li><b>Multi-label:</b> several labels can be true at once (photo with a cat and a bird → Cat + Bird).</li></ul>
+<p><b>Regression:</b> predicted output values are <mark>real numbers</mark>.</p>
+<ul><li><b>Simple:</b> one continuous dependent variable predicted from a <b>single</b> independent variable (simple linear regression).</li><li><b>Multiple:</b> predicted from <b>multiple</b> independent variables (multiple linear regression).</li><li><b>Nonlinear:</b> relationship follows a nonlinear pattern; flexible for a wide range of functional forms.</li></ul>
+<p>Visual: classification draws a line <i>separating</i> groups; regression draws a line <i>fitting through</i> points.</p>
+<p><b>Algorithms:</b> SVM, Logistic Regression, Naive Bayes, Neural Networks, KNN, Random Forest (also decision trees).</p></details>
+
+<details><summary>1.3 Unsupervised learning</summary>
+<p><b>Definition:</b> algorithms get data <mark>without labels</mark>. It is a kind of <b>self-learning</b> that finds <b>previously hidden patterns</b> in unlabeled data.</p>
+<ul><li><b>Clustering:</b> find hidden patterns from similarities/differences; group items into clusters.</li><li><b>Association:</b> find the relationship of one data item to another.</li><li><b>Dimensionality reduction:</b> reduce the number of dimensions of the data; used for <b>feature extraction</b>.</li></ul>
+<p><b>Algorithms:</b> k-means, hierarchical clustering, apriori.</p></details>
+
+<details><summary>1.4 Comparison table</summary><div class="sc"><table>
+<tr><th></th><th>Supervised</th><th>Unsupervised</th></tr>
+<tr><td>Input data</td><td>Labeled</td><td>Unlabeled</td></tr>
+<tr><td>Feedback</td><td>Has feedback mechanism</td><td>No feedback mechanism</td></tr>
+<tr><td>How it classifies</td><td>Based on the training dataset</td><td>Assigns properties of given data</td></tr>
+<tr><td>Divided into</td><td>Regression &amp; Classification</td><td>Clustering &amp; Association</td></tr>
+<tr><td>Purpose</td><td>Prediction</td><td>Analysis</td></tr>
+<tr><td>Algorithms</td><td>Decision trees, logistic regression, SVM</td><td>k-means, hierarchical clustering, apriori</td></tr>
+<tr><td>Classes</td><td>Known number</td><td>Unknown number</td></tr></table></div>
+<div class="box trap"><b>Trap:</b> the slide splits unsupervised into Clustering &amp; Association in the table, but lists three methods (adding dimensionality reduction) elsewhere. Know both.</div></details>
+
+<details><summary>1.5 Perceptron: the idea</summary>
+<p>Designed to <mark>mimic neurons in the human brain</mark>. A single perceptron is a <mark>linear classifier</mark>: it separates two groups with a line. It learns by readjusting itself using points it <b>misclassified</b> (on the wrong side of the line) at every time step.</p>
+<p>Example: Dogs vs Cats with axes Speed (y) and Time spent sleeping (x). The line splits dogs (fast, sleep less) from cats.</p></details>
+
+<details><summary>1.6 Which side of the line? (distance and sign)</summary>
+<p>Line: <code>Ax + By + C = 0</code>. Distance of point (x<sub>a</sub>, y<sub>a</sub>): <code>d = (A·x<sub>a</sub> + B·y<sub>a</sub> + C) / √(A² + B²)</code>.</p>
+<ul><li><code>Ax+By+C &gt; 0</code> → one side (above in the slide)</li><li><code>Ax+By+C = 0</code> → on the line</li><li><code>Ax+By+C &lt; 0</code> → other side (below)</li></ul>
+<p>Prediction: <code>sgn(Ax+By+C)</code>: <b>1</b> = one group, <b>−1</b> = the other. <code>sgn(x)=1 if x&gt;0; 0 if x=0; −1 if x&lt;0</code>.</p>
+<p>Training set: points (x, y, a), where a = 1 or −1 is the true group. A point is <mark>misclassified</mark> when its a differs from the prediction.</p></details>
+
+<details><summary>1.7 Perceptron Learning Algorithm (PLA)</summary>
+<p><b>Two assumptions:</b> (1) data is <mark>linearly separable</mark> (a hyperplane fully separates the two classes); (2) designed for <mark>binary classification</mark> (e.g. breast cancer positive/negative).</p>
+<p><b>Update (for each misclassified point):</b></p>
+<p><code>A ← A + a·x</code>, <code>B ← B + a·y</code>, <code>C ← C + a·1</code></p>
+<p><b>With learning rate r:</b> <code>A ← A + r·a·x</code>, <code>B ← B + r·a·y</code>, <code>C ← C + r·a·1</code>. r scales how much we correct per misclassified point.</p>
+<p><b>Vector form:</b> <code>w₀ ← w₀ + a·1</code>, <code>w₁ ← w₁ + a·x₁</code>, <code>w₂ ← w₂ + a·x₂</code>, i.e. <code>w ← w + a·x</code> (x₀ = 1 is the bias input).</p>
+<div class="box tip"><b>Intuition:</b> a wrong point “pulls” the line toward itself: add the point if its class is +1, subtract if −1.</div>
+<div class="box trap"><b>Trap:</b> if data is not linearly separable, the line keeps bouncing around and never halts.</div></details>
+
+<details><summary>1.8 Anatomy &amp; multi-layer perceptrons</summary>
+<p><b>Anatomy:</b> Inputs (x₀=1, x₁, x₂, x₃) × Weights (w₀…w₃) → summation (+) → <b>activation function sgn()</b> → Output.</p>
+<p><b>Multi-layered perceptrons:</b> sets of perceptrons linked together; they have <mark>non-linear activation functions</mark>, so they can handle data that is <b>not linearly separable</b> (input layer → hidden layers → output layer).</p></details>
+</section>
+
+<section id="summary">
+<h2>2. Smart summary &amp; memory tools</h2>
+<details open><summary>High-yield summary</summary>
+<ul>
+<li><b>Supervised</b> = labeled → predict → classification (categories) + regression (real numbers); known classes; has feedback.
+<ul><li>Classification: binary / multiclass / multi-label</li><li>Regression: simple / multiple / nonlinear</li></ul></li>
+<li><b>Unsupervised</b> = unlabeled → find hidden patterns → clustering, association, dimensionality reduction; unknown classes; no feedback.</li>
+<li><b>Hybrid</b> = labeled + unlabeled.</li>
+<li><b>Perceptron</b> = linear binary classifier, brain-neuron inspired, <code>sgn(w·x)</code>.</li>
+<li><b>PLA</b> = on a mistake: <code>w ← w + r·a·x</code>. Needs linear separability or it never halts.</li>
+<li><b>MLP</b> = layers + non-linear activation → non-separable data.</li></ul></details>
+<details><summary>Mnemonics</summary>
+<ul><li><b>“CR”</b> = Supervised: <b>C</b>lassification &amp; <b>R</b>egression. <b>“CAD”</b> = Unsupervised: <b>C</b>lustering, <b>A</b>ssociation, <b>D</b>imensionality reduction.</li>
+<li><b>Binary = 2, Multiclass = 1 of many, Multi-label = many at once.</b></li>
+<li>PLA: <b>“Wrong? Nudge by a·x.”</b> Sign of a decides direction.</li>
+<li>Regression → <b>R</b>eal numbers. Clustering → <b>C</b>ollect similar.</li></ul></details>
+<details><summary>Common mistakes &amp; traps</summary>
+<ul><li>k-means and apriori are <b>unsupervised</b>; do not list them as supervised.</li>
+<li>Multi-label ≠ multiclass.</li><li>sgn(0) = <b>0</b>, not 1.</li>
+<li>Single perceptron cannot solve non-linearly-separable data (needs MLP).</li>
+<li>Supervised is for <i>prediction</i>, unsupervised for <i>analysis</i>.</li>
+<li>The slide’s prediction formula mixes y<sub>a</sub>/y<sub>b</sub>; the intended point is (x<sub>a</sub>, y<sub>a</sub>).</li></ul></details>
+<details><summary>Spaced-repetition plan</summary>
+<p>Day 0: read Explanation. Day 1: recite the table from memory. Day 3: redo all MCQs, retry misses. Day 7: write the PLA update and model answers from memory. Night before: Revision tab only.</p></details>
+</section>
+
+<section id="mcq">
+<h2>3. MCQs <span id="score">0 / 0</span></h2>
+<div id="ql"></div></section>
+
+<section id="written">
+<h2>4. Written questions</h2>
+<div id="wl"></div></section>
+
+<section id="rev">
+<h2>5. Revision sheet (night before)</h2>
+<div class="q"><h3>Definitions</h3>
+<p><b>Supervised:</b> labeled datasets train algorithms to classify and predict. <b>Unsupervised:</b> unlabeled data, finds hidden patterns. <b>Perceptron:</b> linear binary classifier mimicking neurons.</p>
+<h3>Lists</h3>
+<p>Supervised: classification (binary, multiclass, multi-label), regression (simple, multiple, nonlinear). Algorithms: SVM, logistic reg., Naive Bayes, NN, KNN, Random Forest, decision trees.<br>Unsupervised: clustering, association, dimensionality reduction. Algorithms: k-means, hierarchical, apriori.</p>
+<h3>Formulas</h3>
+<p><code>Ax+By+C=0</code> · <code>d=(Ax<sub>a</sub>+By<sub>a</sub>+C)/√(A²+B²)</code> · <code>ŷ=sgn(Ax+By+C)</code><br>
+PLA: <code>A←A+a·x</code>, <code>B←B+a·y</code>, <code>C←C+a·1</code> · with rate: multiply by r · vector: <code>w←w+a·x</code>, x₀=1<br>
+sgn: +1 if &gt;0, 0 if =0, −1 if &lt;0</p>
+<h3>Rules</h3>
+<p>PLA needs linearly separable + binary. Not separable → never halts. MLP = non-linear activation → handles non-separable. Misclassified = a ≠ prediction.</p></div>
+</section>
+</main>
+<script>
+const S=[["explain","Explanation"],["summary","Summary"],["mcq","MCQs"],["written","Written"],["rev","Revision"]];
+const nav=document.getElementById("nav");
+S.forEach(([id,l])=>{const b=document.createElement("button");b.className="tab"+(id=="explain"?" on":"");b.textContent=l;b.onclick=()=>{document.querySelectorAll("section").forEach(s=>s.classList.toggle("on",s.id==id));document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("on",t==b));scrollTo({top:0,behavior:"smooth"})};nav.appendChild(b)});
+document.getElementById("th").onclick=()=>{const r=document.documentElement,d=getComputedStyle(r).getPropertyValue("--bg").trim()=="#10151d";r.dataset.theme=d?"light":"dark"};
+const Q=[
+["Which feature defines supervised learning?",["Unlabeled data","Labeled datasets","No feedback","Unknown classes"],1,"Labeled datasets train the algorithm. (Easy)"],
+["Unsupervised learning is given data that…",["has labels","contains no labels","is always numeric","has a supervisor"],1,"It self-learns hidden patterns from unlabeled data. (Easy)"],
+["A hybrid model that includes supervised learning uses…",["only labeled data","only unlabeled data","labeled and unlabeled data","no data"],2,"The slide shows labeled & unlabeled. (Easy)"],
+["Predicting a house price (real number) is…",["Binary classification","Regression","Clustering","Association"],1,"Regression outputs real numbers. (Easy)"],
+["Spam vs Not spam is…",["Multi-label","Multiclass","Binary classification","Regression"],2,"Two classes only. (Easy)"],
+["A photo containing a cat and a bird, tagged with both, is…",["Binary","Multiclass","Multi-label","Clustering"],2,"Several labels true at once = multi-label. (Medium)"],
+["A photo is labeled exactly one of Dog, Cat, Horse, Fish, Bird. This is…",["Multiclass","Multi-label","Regression","Association"],0,"One correct class among many. (Medium)"],
+["Which is NOT a supervised algorithm?",["SVM","KNN","k-means clustering","Random Forest"],2,"k-means is unsupervised clustering. (Medium)"],
+["Association in unsupervised learning finds…",["a real-valued output","relationships between data items","the labels","the learning rate"],1,"Relationship of one item to another. (Easy)"],
+["Dimensionality reduction is used for…",["feature extraction","labeling data","regression","feedback"],0,"It reduces dimensions for feature extraction. (Medium)"],
+["Supervised learning has ___ classes; unsupervised has ___ classes.",["unknown / known","known / unknown","known / known","unknown / unknown"],1,"Known number vs unknown number. (Medium)"],
+["Which has a feedback mechanism?",["Unsupervised","Supervised","Both","Neither"],1,"Supervised has feedback, unsupervised has none. (Easy)"],
+["In the Client leads dataset, the label column is…",["Gender","Lead Revenues","Number of emails","Client"],3,"Feature columns + label (class) column; Client YES/NO. (Medium)"],
+["Which pairing is correct?",["Supervised → analysis","Unsupervised → prediction","Supervised → prediction","Both → prediction"],2,"Supervised = prediction, unsupervised = analysis. (Medium)"],
+["A single perceptron is a…",["clustering algorithm","linear classifier","regressor for curves","non-linear classifier"],1,"It separates two groups with a line. (Easy)"],
+["The perceptron updates itself using…",["all correct points","misclassified points","only the origin","random points"],1,"Points on the wrong side drive updates. (Easy)"],
+["If Ax+By+C &lt; 0 for a point, it lies…",["on the line","on the side where the expression is negative (below)","at infinity","in the positive group"],1,"Sign tells the side; negative = other group. (Medium)"],
+["sgn(0) equals…",["1","−1","0","undefined"],2,"sgn gives 1, 0, −1 for >0, =0, <0. (Hard, trap)"],
+["The PLA update for a misclassified point (x, y, a) is…",["A ← A − a·x","A ← A + a·x","A ← a·x","A ← A + x/a"],1,"A←A+a·x, B←B+a·y, C←C+a·1. (Medium)"],
+["The learning rate r…",["selects the class","scales the correction per misclassified point","is the bias","is the number of layers"],1,"Updates become r·a·x. (Medium)"],
+["Why is C updated with a·1?",["C is the bias with constant input x₀ = 1","1 is the learning rate","a is always 1","C is ignored"],0,"Bias input x₀=1 gives w₀←w₀+a·1. (Hard)"],
+["If data is not linearly separable, PLA…",["converges faster","bounces around, never halting","halts immediately","becomes an MLP"],1,"The line keeps changing. (Medium)"],
+["PLA’s two assumptions are…",["labeled + regression data","linearly separable data + binary classification","unlabeled data + clustering","non-linear data + multiclass"],1,"Hyperplane separation and two classes. (Medium)"],
+["Multi-layered perceptrons can handle non-separable data because they use…",["more data","non-linear activation functions","a bigger r","sgn only"],1,"Non-linear activations in linked layers. (Hard)"],
+["Vector form of PLA is…",["w ← w·a·x","w ← w + a·x","w ← w − x","w ← a"],1,"w ← w + a·x with x₀ = 1. (Medium)"]
+];
+let c=0,t=0;const ql=document.getElementById("ql");
+Q.forEach((q,i)=>{const d=document.createElement("div");d.className="q";d.innerHTML=`<b>${i+1}. ${q[0]}</b>`;
+q[1].forEach((o,j)=>{const b=document.createElement("button");b.className="o";b.innerHTML=o;b.onclick=()=>{if(d.classList.contains("done"))return;d.classList.add("done");t++;if(j==q[2]){c++;b.classList.add("ok")}else{b.classList.add("no");d.children[q[2]+1].classList.add("ok")}document.getElementById("score").textContent=c+" / "+t};d.appendChild(b)});
+const e=document.createElement("div");e.className="ex";e.innerHTML="<b>Why:</b> "+q[3];d.appendChild(e);ql.appendChild(d)});
+const W=[
+["Define supervised and unsupervised learning and give one difference (short).","Supervised learning uses labeled datasets to train algorithms to classify data and predict outcomes. Unsupervised learning uses unlabeled data and finds hidden patterns on its own. Difference: supervised has a feedback mechanism and known classes; unsupervised has neither."],
+["Differentiate binary, multiclass and multi-label classification (short).","Binary: two classes (spam / not spam). Multiclass: many classes but exactly one applies (dog among dog, cat, horse…). Multi-label: several labels can apply at once (a photo with a cat and a bird)."],
+["List and describe the three types of regression (short).","Simple: one independent variable predicts a continuous dependent variable. Multiple: several independent variables. Nonlinear: the relationship follows a nonlinear pattern, giving flexibility for many functional forms."],
+["Name the three unsupervised methods and what each does (short).","Clustering groups items by similarity/difference. Association finds relationships between data items. Dimensionality reduction cuts the number of dimensions, used for feature extraction."],
+["Compare supervised and unsupervised learning in a structured answer (long).","Input: labeled vs unlabeled. Feedback: yes vs none. Classification basis: the training dataset vs properties of the data itself. Types: regression and classification vs clustering and association. Purpose: prediction vs analysis. Algorithms: decision trees, logistic regression, SVM vs k-means, hierarchical clustering, apriori. Classes: known number vs unknown number. Example: spam filtering (supervised) vs grouping customers by behavior (unsupervised). A hybrid model uses both labeled and unlabeled data."],
+["Explain how the Perceptron Learning Algorithm works, with its update rule (long).","A perceptron is a linear classifier for two groups. The line Ax+By+C=0 divides the plane; the sign of Ax+By+C tells which side a point is on, and prediction is sgn(Ax+By+C), giving 1 or −1. Each training sample is (x, y, a) with a = ±1. For each sample, if the prediction differs from a (misclassified), update A←A+r·a·x, B←B+r·a·y, C←C+r·a·1, where r is the learning rate. In vector form w←w+r·a·x with x₀=1 as the bias input. Repeating this over the samples moves the line toward separating the groups. Assumptions: linearly separable data and binary classification. If the data is not separable, the line bounces around and never halts."],
+["Why do we need multi-layered perceptrons? Describe the perceptron anatomy (long).","A single perceptron has inputs (x₀=1, x₁…xₙ), weights (w₀…wₙ), a summation unit and a sgn() activation producing the output. It can only separate linearly separable data. Multi-layered perceptrons link many perceptrons in input, hidden and output layers and use non-linear activation functions, so they can model data that is not linearly separable."]
+];
+const wl=document.getElementById("wl");
+W.forEach((w,i)=>{const d=document.createElement("details");d.innerHTML=`<summary>Q${i+1}. ${w[0]}</summary><p><b>Model answer:</b> ${w[1]}</p>`;wl.appendChild(d)});
+</script></body></html>
